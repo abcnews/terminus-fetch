@@ -7,17 +7,16 @@ const OPTIONS = [
   { id: 123860, type: 'show', source: 'iview' }
 ];
 
+function ensureObject(options) {
+  return typeof options !== 'object' ? options : { id: options };
+}
+
 OPTIONS.forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[env] options=${JSON.stringify(options)}`, err, doc))
 );
-OPTIONS.forEach(options =>
-  terminusFetch(options, (err, doc) => console.log(`[live] options=${JSON.stringify(options)}`, err, doc), true)
+OPTIONS.map(x => ({ ...ensureObject(x), forceLive: true })).forEach(options =>
+  terminusFetch(options, (err, doc) => console.log(`[live] options=${JSON.stringify(options)}`, err, doc))
 );
-OPTIONS.forEach(options =>
-  terminusFetch(
-    options,
-    (err, doc) => console.log(`[preview] options=${JSON.stringify(options)}`, err, doc),
-    null,
-    true
-  )
+OPTIONS.map(x => ({ ...ensureObject(x), forcePreview: true })).forEach(options =>
+  terminusFetch(options, (err, doc) => console.log(`[preview] options=${JSON.stringify(options)}`, err, doc))
 );

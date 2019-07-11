@@ -3,6 +3,8 @@ interface Options {
   type?: string;
   id?: string | number;
   apikey?: string;
+  forceLive?: boolean;
+  forcePreview?: boolean;
 }
 
 // This built JS asset _will_be_ rewritten on-the-fly, so we need to obscure the origin somewhat
@@ -26,11 +28,9 @@ function ensureIsOptions(options: string | number | Options): Options {
 
 function terminusFetch(
   options: string | number | Options,
-  done: (err?: ProgressEvent | Error, doc?: Object) => void,
-  forceLive?: boolean,
-  forcePreview?: boolean
+  done: (err?: ProgressEvent | Error, doc?: Object) => void
 ): void {
-  const { source, type, id, apikey } = { ...DEFAULT_OPTIONS, ...ensureIsOptions(options) };
+  const { source, type, id, apikey, forceLive, forcePreview } = { ...DEFAULT_OPTIONS, ...ensureIsOptions(options) };
 
   if (id != +id && !String(id).length) {
     return done(new Error(`Invalid ID: ${id}`));

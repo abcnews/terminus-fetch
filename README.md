@@ -40,9 +40,9 @@ terminusFetch({ id: 123860, type: 'show', source: 'iview' }, (err, doc) => {
 
 If your project's JS is currently executing in a page on `aus.aunty.abc.net.au`, requests will be made to Preview Terminus (`https://api-preview.terminus.abc-prod.net.au/api/v1/content/*`), otherwise they'll be made to Live Terminus (`https://api.abc.net.au/terminus/api/v1/content/*`).
 
-If you want to direct a single request to Live Terminus, regardless of the current execution domain, pass `true` as a 3rd argument to `terminusFetch`.
+If you want to direct a single request to Live Terminus, regardless of the current execution domain, pass `forceLive: true` as an option.
 
-If you want to direct a single request to Preview Terminus, regardless of the current execution domain, pass `true` as a 4th argument to `terminusFetch`.
+If you want to direct a single request to Preview Terminus, regardless of the current execution domain, pass `forcePreview: true` as an option.
 
 ### API
 
@@ -56,10 +56,10 @@ declare function terminusFetch(
         type?: string;
         id?: string | number;
         apikey?: string;
+        forceLive?: boolean;
+        forcePreview?: boolean;
       },
-  done: (err?: ProgressEvent | Error, doc?: Object) => void,
-  forceLive?: boolean,
-  forcePreview?: boolean
+  done: (err?: ProgressEvent | Error, doc?: Object) => void
 ): void;
 ```
 
