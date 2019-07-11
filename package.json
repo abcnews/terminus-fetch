@@ -1,0 +1,34 @@
+{
+  "name": "@abcnews/terminus-fetch",
+  "version": "1.0.0-pre",
+  "description": "Grab a document from the Preview / Live Terminus content API, based on the current execution domain",
+  "license": "MIT",
+  "contributors": [
+    "Colin Gourlay <Gourlay.Colin@abc.net.au>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abcnews/terminus-fetch.git"
+  },
+  "main": "dist/terminus-fetch.js",
+  "module": "dist/terminus-fetch.mjs",
+  "source": "src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "start": "http-server example --silent & npm run watch",
+    "watch": "microbundle watch --entry example/src/index.ts --output example/dist/bundle.js --format umd",
+    "build": "microbundle --format cjs,es --no-sourcemap",
+    "prepare": "npm run build",
+    "release": "release-it --ci"
+  },
+  "devDependencies": {
+    "http-server": "^0.11.1",
+    "microbundle": "^0.11.0",
+    "release-it": "^12.3.2"
+  }
+}
