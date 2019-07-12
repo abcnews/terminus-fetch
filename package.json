@@ -19,6 +19,13 @@
   "publishConfig": {
     "access": "public"
   },
+  "minify": {
+    "mangle": {
+      "reserved": [
+        "terminusFetch"
+      ]
+    }
+  },
   "scripts": {
     "start": "http-server example --silent & npm run watch",
     "watch": "microbundle watch --entry example/src/index.ts --output example/dist/bundle.js --format umd",
