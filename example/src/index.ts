@@ -11,6 +11,7 @@ function ensureObject(options) {
   return typeof options !== 'object' ? options : { id: options };
 }
 
+// Using callbacks
 OPTIONS.forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[env] options=${JSON.stringify(options)}`, err, doc))
 );
@@ -20,3 +21,10 @@ OPTIONS.map(x => ({ ...ensureObject(x), forceLive: true })).forEach(options =>
 OPTIONS.map(x => ({ ...ensureObject(x), forcePreview: true })).forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[preview] options=${JSON.stringify(options)}`, err, doc))
 );
+
+// Using promises
+OPTIONS.forEach(options => {
+  terminusFetch(options)
+    .then(doc => console.log(`[preview] [resolved] options=${JSON.stringify(options)}`, doc))
+    .catch(err => console.log('[preview] [rejected]', err));
+});

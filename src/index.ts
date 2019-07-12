@@ -29,11 +29,14 @@ function ensureIsOptions(options: string | number | Options): Options {
 function terminusFetch(
   options: string | number | Options,
   done: (err?: ProgressEvent | Error, doc?: Object) => void
-): void {
+): void;
+function terminusFetch(options: string | number | Options): Promise<Object>;
+function terminusFetch(options, done?): any {
   const { source, type, id, apikey, forceLive, forcePreview } = { ...DEFAULT_OPTIONS, ...ensureIsOptions(options) };
 
   if (id != +id && !String(id).length) {
-    return done(new Error(`Invalid ID: ${id}`));
+    const error = new Error(`Invalid ID: ${id}`);
+    return typeof done === 'function' ? done(error) : Promise.reject(error);
   }
 
   const endpoint = forceLive
@@ -43,14 +46,32 @@ function terminusFetch(
     : TERMINUS_ENV_BASED_ENDPOINT;
   const uri = `${endpoint}/api/v1/content/${source}/${type}/${id}?apikey=${apikey}`;
   const xhr = new XMLHttpRequest();
-  const errorHandler = (event: ProgressEvent) => done(event);
 
-  xhr.onabort = errorHandler;
-  xhr.onerror = errorHandler;
-  xhr.onload = event => (xhr.status !== 200 ? done(event) : done(undefined, parse(xhr.responseText)));
-  xhr.open('GET', uri, true);
-  xhr.responseType = 'text';
-  xhr.send();
+  if (typeof done === 'function') {
+    const errorHandler = (event: ProgressEvent) => done(event);
+
+    xhr.onload = event => (xhr.status !== 200 ? done(event) : done(undefined, parse(xhr.responseText)));
+    xhr.onabort = errorHandler;
+    xhr.onerror = errorHandler;
+    xhr.open('GET', uri, true);
+    xhr.responseType = 'text';
+    xhr.send();
+  } else {
+    return new Promise<Object>((resolve, reject) => {
+      xhr.onload = event => {
+        if (xhr.status !== 200) {
+          reject(event);
+        } else {
+          resolve(parse(xhr.responseText));
+        }
+      };
+      xhr.onabort = reject;
+      xhr.onerror = reject;
+      xhr.open('GET', uri, true);
+      xhr.responseType = 'text';
+      xhr.send();
+    });
+  }
 }
 
 function parse(responseText: string): Object {

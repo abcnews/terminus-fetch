@@ -59,9 +59,11 @@ declare function terminusFetch(
         forceLive?: boolean;
         forcePreview?: boolean;
       },
-  done: (err?: ProgressEvent | Error, doc?: Object) => void
-): void;
+  done?: (err?: ProgressEvent | Error, doc?: Object) => void
+): void | Promise<Object>;
 ```
+
+If the `done` callback is omitted then the return value will be a Promise.
 
 #### Default options
 
