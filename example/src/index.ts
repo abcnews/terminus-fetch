@@ -25,6 +25,10 @@ OPTIONS.map(x => ({ ...ensureObject(x), forcePreview: true })).forEach(options =
 // Using promises
 OPTIONS.forEach(options => {
   terminusFetch(options)
-    .then(doc => console.log(`[preview] [resolved] options=${JSON.stringify(options)}`, doc))
-    .catch(err => console.log('[preview] [rejected]', err));
+    .then(doc => console.log(`[env resolved] options=${JSON.stringify(options)}`, doc))
+    .catch(err => console.log('[env rejected]', err));
 });
+
+terminusFetch(1241241241241245125125125125)
+  .then(doc => console.log(`[error? resolved]`, doc))
+  .catch(err => console.log('[error? rejected]', err));

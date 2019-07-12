@@ -58,18 +58,10 @@ function terminusFetch(options, done?): any {
     xhr.send();
   } else {
     return new Promise<Object>((resolve, reject) => {
-      xhr.onload = event => {
-        if (xhr.status !== 200) {
-          reject(event);
-        } else {
-          resolve(parse(xhr.responseText));
-        }
-      };
-      xhr.onabort = reject;
-      xhr.onerror = reject;
-      xhr.open('GET', uri, true);
-      xhr.responseType = 'text';
-      xhr.send();
+      terminusFetch(options, (err, doc) => {
+        if (err) reject(err);
+        resolve(doc);
+      });
     });
   }
 }
