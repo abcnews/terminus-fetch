@@ -36,6 +36,14 @@ terminusFetch({ id: 123860, type: 'show', source: 'iview' }, (err, doc) => {
     // > {id: 123860, docType: "show", contentSource: "iview", ...}
   }
 });
+
+// or, using a Promise
+terminusFetch({ id: 123860, type: 'show', source: 'iview' })
+  .then(doc => {
+    console.log(doc);
+    // > {id: 123860, docType: "show", contentSource: "iview", ...}
+  })
+  .catch(err => console.error(err));
 ```
 
 If your project's JS is currently executing in a page on `aus.aunty.abc.net.au`, requests will be made to Preview Terminus (`https://api-preview.terminus.abc-prod.net.au/api/v1/content/*`), otherwise they'll be made to Live Terminus (`https://api.abc.net.au/terminus/api/v1/content/*`).
@@ -59,9 +67,11 @@ declare function terminusFetch(
         forceLive?: boolean;
         forcePreview?: boolean;
       },
-  done: (err?: ProgressEvent | Error, doc?: Object) => void
-): void;
+  done?: (err?: ProgressEvent | Error, doc?: Object) => void
+): void | Promise<Object>;
 ```
+
+If the `done` callback is omitted then the return value will be a Promise.
 
 #### Default options
 
