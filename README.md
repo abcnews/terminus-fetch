@@ -40,9 +40,8 @@ fetchOne({ id: 123860, type: 'show', source: 'iview' })
   })
   .catch(err => console.error(err));
 
-
 // You can even fetch multiple documents at once:
-fetchMany([10736062, { id: 10734902, type: 'video' }, { id: 123860, type: 'show', source: 'iview' })
+fetchMany([10736062, { id: 10734902, type: 'video' }, { id: 123860, type: 'show', source: 'iview' }])
   .then(docs => {
     console.log(docs);
     // > [
