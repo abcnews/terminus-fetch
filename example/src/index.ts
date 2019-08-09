@@ -8,7 +8,7 @@ const OPTIONS = [
 ];
 
 function ensureObject(options) {
-  return typeof options !== 'object' ? options : { id: options };
+  return typeof options === 'object' ? options : { id: options };
 }
 
 // Using callbacks
