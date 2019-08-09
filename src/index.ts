@@ -4,6 +4,7 @@ interface Options {
   id?: ID;
   apikey?: string;
   forceLive?: boolean;
+  isTeasable?: boolean;
   forcePreview?: boolean;
 }
 
@@ -24,47 +25,34 @@ const TERMINUS_ENV_BASED_ENDPOINT = !IS_PREVIEW || HAS_LIVE_FLAG ? TERMINUS_LIVE
 const DEFAULT_OPTIONS: Options = {
   source: 'coremedia',
   type: 'article',
-  apikey: '54564fe299e84f46a57057266fcf233b'
+  apikey: '54564fe299e84f46a57057266fcf233b',
+  isTeasable: false
 };
-
-function ensureIsOptions(options: OptionsOrID): Options {
-  return typeof options === 'string' || typeof options === 'number' ? { id: options } : options;
-}
 
 function terminusFetch(options: OptionsOrID): Promise<Object>;
 function terminusFetch(options: OptionsOrID, done: Done): void;
 function terminusFetch(options: OptionsOrID, done?: Done): any {
   return asyncTask(
     new Promise((resolve, reject) => {
-      const { source, type, id, apikey, forceLive, forcePreview } = { ...DEFAULT_OPTIONS, ...ensureIsOptions(options) };
+      const { source, type, id, apikey, isTeasable, forceLive, forcePreview } = {
+        ...DEFAULT_OPTIONS,
+        ...ensureIsOptions(options)
+      };
 
       if (id != +id && !String(id).length) {
         return reject(new Error(`Invalid ID: ${id}`));
       }
 
-      const endpoint = forceLive
-        ? TERMINUS_LIVE_ENDPOINT
-        : forcePreview
-        ? TERMINUS_PREVIEW_ENDPOINT
-        : TERMINUS_ENV_BASED_ENDPOINT;
-      const uri = `${endpoint}/api/v1/content/${source}/${type}/${id}?apikey=${apikey}`;
-      const xhr = new XMLHttpRequest();
-      const errorHandler = (event: ProgressEvent) => reject(event);
-
-      xhr.onload = event => (xhr.status !== 200 ? reject(event) : resolve(parse(xhr.responseText)));
-      xhr.onabort = errorHandler;
-      xhr.onerror = errorHandler;
-      xhr.open('GET', uri, true);
-      xhr.responseType = 'text';
-      xhr.send();
+      request(
+        `${getEndpoint(forceLive, forcePreview)}/api/v1/${
+          isTeasable ? 'teasable' : ''
+        }content/${source}/${type}/${id}?apikey=${apikey}`,
+        resolve,
+        reject
+      );
     }),
     done
   );
-}
-
-function parse(responseText: string): Object {
-  // Terminus is not returning proxied asset URLs (yet)
-  return JSON.parse(responseText.replace(GENIUNE_MEDIA_ENDPOINT_PATTERN, PROXIED_MEDIA_ENDPOINT));
 }
 
 function asyncTask(promise: Promise<any>, callback?: Callback<any, any>) {
@@ -73,6 +61,31 @@ function asyncTask(promise: Promise<any>, callback?: Callback<any, any>) {
   } else {
     return promise;
   }
+}
+
+function ensureIsOptions(options: OptionsOrID): Options {
+  return typeof options === 'string' || typeof options === 'number' ? { id: options } : options;
+}
+
+function getEndpoint(forceLive: boolean, forcePreview: boolean): string {
+  return forceLive ? TERMINUS_LIVE_ENDPOINT : forcePreview ? TERMINUS_PREVIEW_ENDPOINT : TERMINUS_ENV_BASED_ENDPOINT;
+}
+
+function request(uri: string, resolve: Function, reject: Function) {
+  const xhr = new XMLHttpRequest();
+  const errorHandler = (event: ProgressEvent) => reject(event);
+
+  xhr.onload = event => (xhr.status !== 200 ? reject(event) : resolve(parse(xhr.responseText)));
+  xhr.onabort = errorHandler;
+  xhr.onerror = errorHandler;
+  xhr.open('GET', uri, true);
+  xhr.responseType = 'text';
+  xhr.send();
+}
+
+function parse(responseText: string): Object {
+  // Terminus is not returning proxied asset URLs (yet)
+  return JSON.parse(responseText.replace(GENIUNE_MEDIA_ENDPOINT_PATTERN, PROXIED_MEDIA_ENDPOINT));
 }
 
 export default terminusFetch;

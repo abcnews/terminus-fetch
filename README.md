@@ -64,6 +64,7 @@ declare function terminusFetch(
         type?: string;
         id?: string | number;
         apikey?: string;
+        isTeasable?: string;
         forceLive?: boolean;
         forcePreview?: boolean;
       },
@@ -80,7 +81,8 @@ If the `done` callback is omitted then the return value will be a Promise.
   source: 'coremedia',
   type: 'article',
   id: undefined,
-  apikey: '54564fe299e84f46a57057266fcf233b' /* (News) */
+  apikey: '54564fe299e84f46a57057266fcf233b' /* (News) */,
+  isTeasable: false
 }
 ```
 
