@@ -11,8 +11,12 @@ interface DocumentOptions {
   id?: DocumentID;
 }
 type DocumentOptionsOrDocumentID = DocumentOptions | DocumentID;
-interface MixedOptions extends APIOptions, DocumentOptions {}
-type MixedOptionsOrDocumentID = MixedOptions | DocumentID;
+interface FetchOneOptions extends APIOptions, DocumentOptions {}
+type FetchOneOptionsOrDocumentID = FetchOneOptions | DocumentID;
+interface SearchOptions extends APIOptions {
+  source?: string;
+  [x: string]: any;
+}
 interface TerminusDocument {
   _links: {};
 }
@@ -35,16 +39,20 @@ const DEFAULT_DOCUMENT_OPTIONS: DocumentOptions = {
   source: 'coremedia',
   type: 'article'
 };
+const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
+  ...DEFAULT_API_OPTIONS,
+  source: DEFAULT_DOCUMENT_OPTIONS.source
+};
 
-function fetchOne(mixedOptions: MixedOptionsOrDocumentID): Promise<TerminusDocument>;
-function fetchOne(mixedOptions: MixedOptionsOrDocumentID, done: Done<TerminusDocument>): void;
-function fetchOne(mixedOptions: MixedOptionsOrDocumentID, done?: Done<TerminusDocument>): any {
+function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID): Promise<TerminusDocument>;
+function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done: Done<TerminusDocument>): void;
+function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): any {
   return asyncTask(
     new Promise((resolve, reject) => {
       const { source, type, id, apikey, isTeasable, forceLive, forcePreview } = {
         ...DEFAULT_API_OPTIONS,
         ...DEFAULT_DOCUMENT_OPTIONS,
-        ...ensureIsDocumentOptions(mixedOptions)
+        ...ensureIsDocumentOptions(fetchOneOptions)
       };
 
       if (isDocumentIDInvalid(id)) {
@@ -100,7 +108,30 @@ function fetchMany(
         }content?ids=${_documentsOptions
           .map(({ source, type, id }) => `${source}://${type}/${id}`)
           .join(',')}&apikey=${apikey}`,
-        response => resolve(response._embedded && response._embedded.content),
+        response => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
+        reject
+      );
+    }),
+    done
+  );
+}
+
+function search(searchOptions: SearchOptions): Promise<TerminusDocument[]>;
+function search(searchOptions: SearchOptions, done: Done<TerminusDocument[]>): void;
+function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): any {
+  return asyncTask(
+    new Promise((resolve, reject) => {
+      const { apikey, forceLive, forcePreview, source, ...searchParams } = {
+        ...DEFAULT_SEARCH_OPTIONS,
+        ...(searchOptions || <SearchOptions>{})
+      };
+      const searchParamsKeys = Object.keys(searchParams);
+
+      request(
+        `${getEndpoint(forceLive, forcePreview)}/api/v1/search/${source}?${searchParamsKeys
+          .map(key => `${key}=${searchParams[key]}`)
+          .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${apikey}`,
+        response => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
         reject
       );
     }),
@@ -145,5 +176,9 @@ function parse(responseText: string): TerminusDocument {
   return JSON.parse(responseText.replace(GENIUNE_MEDIA_ENDPOINT_PATTERN, PROXIED_MEDIA_ENDPOINT));
 }
 
+function flattenEmbeddedProps(_embedded: Object) {
+  return Object.keys(_embedded).reduce((memo, key) => memo.concat(_embedded[key]), []);
+}
+
 export default fetchOne;
-export { fetchOne, fetchMany };
+export { fetchOne, fetchMany, search };
