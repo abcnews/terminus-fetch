@@ -31,7 +31,7 @@
     "watch": "microbundle watch --entry example/src/index.ts --output example/dist/bundle.js --format umd",
     "build": "microbundle --format cjs,es --no-sourcemap",
     "prepare": "npm run build",
-    "release": "release-it --ci"
+    "release": "release-it"
   },
   "devDependencies": {
     "http-server": "^0.11.1",
