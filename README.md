@@ -123,6 +123,34 @@ This works in a similar way to `fetchOne`, but the first argument is an array of
 
 If the `done` callback is omitted then the return value will be a Promise.
 
+### `search`
+
+```ts
+declare function search(
+  options: {
+    source?: string;
+    apikey?: string;
+    forceLive?: boolean;
+    forcePreview?: boolean;
+    ...searchParams: Object;
+  },
+  done?: (err?: ProgressEvent | Error, doc?: Object) => void
+): void | Promise<Object>;
+```
+
+...where your `searchParams` are additional properties on your `options` object, to query the API.
+
+For example, if you wanted the last 20 images added to Core Media, your `searchParams` would be:
+
+```js
+{
+  limit: 20,
+  doctype: 'image'
+}
+```
+
+If the `done` callback is omitted then the return value will be a Promise.
+
 #### Default options
 
 These are the same as `fetchOne`, only split across two options arguments.
