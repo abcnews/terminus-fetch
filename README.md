@@ -9,7 +9,7 @@ $ npm i @abcnews/terminus-fetch
 ## Usage
 
 ```js
-import { fetchOne, fetchMany } from '@abcnews/terminus-fetch';
+import { fetchOne, fetchMany, search } from '@abcnews/terminus-fetch';
 // We export fetchOne by default, as it's most commmonly used:
 import fetchOne from '@abcnews/terminus-fetch';
 
@@ -33,6 +33,7 @@ fetchOne({ id: 10734902, type: 'video' }, (err, doc) => {
 });
 
 // You can use promises instead of callbacks:
+
 fetchOne({ id: 123860, type: 'show', source: 'iview' })
   .then(doc => {
     console.log(doc);
@@ -41,6 +42,7 @@ fetchOne({ id: 123860, type: 'show', source: 'iview' })
   .catch(err => console.error(err));
 
 // You can even fetch multiple documents at once:
+
 fetchMany([10736062, { id: 10734902, type: 'video' }, { id: 123860, type: 'show', source: 'iview' }])
   .then(docs => {
     console.log(docs);
@@ -48,6 +50,33 @@ fetchMany([10736062, { id: 10734902, type: 'video' }, { id: 123860, type: 'show'
     //     { id: 10736062, docType: "Article", contentSource: "coremedia", ... },
     //     { id: 10734902, docType: "Video", contentSource: "coremedia", ... },
     //     { id: 123860, docType: "show", contentSource: "iview", ... }
+    //   ]
+  })
+  .catch(err => console.error(err));
+
+// Searching is also supported:
+
+search({ limit: 3, doctype: 'image' }), (err, docs) => {
+  if (!err) {
+    console.log(docs);
+    // > [
+    //     { id: 11405582, docType: "Image", contentSource: "coremedia", ... },
+    //     { id: 11404970, docType: "Image", contentSource: "coremedia", ... },
+    //     { id: 11405258, docType: "Image", contentSource: "coremedia", ... }
+    //   ]
+  }
+});
+
+// ...for all sources...:
+
+search({ limit: 1, source: 'mapi', service: 'triplej'})
+  .then(docs => {
+    console.log(docs);
+    // > [
+    //     { id: "maaYa1B4YP", docType: "Artist", ... },
+    //     { id: "mpr9PpbkRd", docType: "Play", ... },
+    //     { id: "mtOKj2DbNK", docType: "Recording", ... },
+    //     { id: "mrDXgzL4Ry", docType: "Release", ... }
     //   ]
   })
   .catch(err => console.error(err));
