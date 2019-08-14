@@ -192,8 +192,6 @@ To run the `/example` project:
 2. Visit `http:<machine_name>.aus.aunty.abc.net.au:8080`
 3. Open the browser's development console
 
-For testing purposes, you can direct all requests to Live Terminus by appending `?prod=1` to your current page URL.
-
 ### Releasing
 
 `npm run release` will handle version bumping, git pushing and npm publication for you.
