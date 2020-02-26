@@ -9,7 +9,7 @@ $ npm i @abcnews/terminus-fetch
 ## Usage
 
 ```js
-import { fetchOne, fetchMany, search } from '@abcnews/terminus-fetch';
+import { fetchOne, search } from '@abcnews/terminus-fetch';
 // We export fetchOne by default, as it's most commmonly used:
 import fetchOne from '@abcnews/terminus-fetch';
 
@@ -38,19 +38,6 @@ fetchOne({ id: 123860, type: 'show', source: 'iview' })
   .then(doc => {
     console.log(doc);
     // > { id: 123860, docType: "show", contentSource: "iview", ... }
-  })
-  .catch(err => console.error(err));
-
-// You can even fetch multiple documents at once:
-
-fetchMany([10736062, { id: 10734902, type: 'video' }, { id: 123860, type: 'show', source: 'iview' }])
-  .then(docs => {
-    console.log(docs);
-    // > [
-    //     { id: 10736062, docType: "Article", contentSource: "coremedia", ... },
-    //     { id: 10734902, docType: "Video", contentSource: "coremedia", ... },
-    //     { id: 123860, docType: "show", contentSource: "iview", ... }
-    //   ]
   })
   .catch(err => console.error(err));
 
@@ -123,34 +110,6 @@ If the `done` callback is omitted then the return value will be a Promise.
   apikey: '54564fe299e84f46a57057266fcf233b' /* (News) */
 }
 ```
-
-### `fetchMany`
-
-```ts
-declare function fetchMany(
-  documentsOptions: [
-
-      | string
-      | number
-      | {
-          source?: string;
-          type?: string;
-          id?: string | number;
-        }
-  ],
-  apiOptions: {
-    apikey?: string;
-    forceLive?: boolean;
-    forcePreview?: boolean;
-    isTeasable?: string;
-  },
-  done?: (err?: ProgressEvent | Error, doc?: Object) => void
-): void | Promise<Object>;
-```
-
-This works in a similar way to `fetchOne`, but the first argument is an array of options for each document you want returned, and shared options for the API are separated out into a 2nd argument, bumping the optional callback into 3rd position.
-
-If the `done` callback is omitted then the return value will be a Promise.
 
 ### `search`
 

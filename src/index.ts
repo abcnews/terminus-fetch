@@ -81,39 +81,11 @@ function fetchMany(
   done: Done<TerminusDocument[]>
 ): void;
 function fetchMany(
-  documentsOptions: DocumentOptionsOrDocumentID[],
-  apiOptions?: APIOptions,
+  _documentsOptions: DocumentOptionsOrDocumentID[],
+  _apiOptions?: APIOptions,
   done?: Done<TerminusDocument[]>
 ): any {
-  return asyncTask(
-    new Promise((resolve, reject) => {
-      const _documentsOptions = (documentsOptions || []).map(documentOptions => ({
-        ...DEFAULT_DOCUMENT_OPTIONS,
-        ...ensureIsDocumentOptions(documentOptions)
-      }));
-      const invalidID = _documentsOptions.map(({ id }) => id).find(isDocumentIDInvalid);
-
-      if (invalidID) {
-        return reject(new Error(`Invalid ID: ${invalidID}`));
-      }
-
-      const { apikey, forceLive, forcePreview, isTeasable } = {
-        ...DEFAULT_API_OPTIONS,
-        ...(apiOptions || <APIOptions>{})
-      };
-
-      request(
-        `${getEndpoint(forceLive, forcePreview)}/api/v1/${
-          isTeasable ? 'teasable' : ''
-        }content?ids=${_documentsOptions
-          .map(({ source, type, id }) => `${source}://${type}/${id}`)
-          .join(',')}&apikey=${apikey}`,
-        response => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
-        reject
-      );
-    }),
-    done
-  );
+  return asyncTask(Promise.reject(new Error('The `fetchMany` function is no longer supported')), done);
 }
 
 function search(searchOptions: SearchOptions): Promise<TerminusDocument[]>;

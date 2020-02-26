@@ -1,4 +1,4 @@
-import terminusFetch, { fetchOne, fetchMany, search } from '../../src';
+import terminusFetch, { fetchOne, fetchMany, search } from '../../src/index';
 
 const FETCH_OPTIONS = [
   10736062,
@@ -29,17 +29,23 @@ function ensureObject(options) {
 FETCH_OPTIONS.forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[env] options=${JSON.stringify(options)}`, err, doc))
 );
-FETCH_OPTIONS.map(x => ({ ...ensureObject(x), ...FETCH_OPTIONS_TEASABLE_MIXIN })).forEach(options =>
+FETCH_OPTIONS.map(x => ({
+  ...ensureObject(x),
+  ...FETCH_OPTIONS_TEASABLE_MIXIN
+})).forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[env:teasable] options=${JSON.stringify(options)}`, err, doc))
 );
-FETCH_OPTIONS.map(x => ({ ...ensureObject(x), forceLive: true })).forEach(options =>
+FETCH_OPTIONS.map(x => ({
+  ...ensureObject(x),
+  forceLive: true
+})).forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[live] options=${JSON.stringify(options)}`, err, doc))
 );
-FETCH_OPTIONS.map(x => ({ ...ensureObject(x), forcePreview: true })).forEach(options =>
+FETCH_OPTIONS.map(x => ({
+  ...ensureObject(x),
+  forcePreview: true
+})).forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[preview] options=${JSON.stringify(options)}`, err, doc))
-);
-fetchMany(FETCH_OPTIONS, null, (err, doc) =>
-  console.log(`[many][env] options=${JSON.stringify(FETCH_OPTIONS)};null`, err, doc)
 );
 
 // Using promises
@@ -48,16 +54,6 @@ FETCH_OPTIONS.forEach(options => {
     .then(doc => console.log(`[env resolved] options=${JSON.stringify(options)}`, doc))
     .catch(err => console.log('[env rejected]', err));
 });
-fetchMany(FETCH_OPTIONS, FETCH_OPTIONS_TEASABLE_MIXIN)
-  .then(docs =>
-    console.log(
-      `[many][env:teasable resolved] options=${JSON.stringify(FETCH_OPTIONS)};${JSON.stringify(
-        FETCH_OPTIONS_TEASABLE_MIXIN
-      )}`,
-      docs
-    )
-  )
-  .catch(err => console.log('[many][env:teasable rejected]', err));
 
 terminusFetch(1241241241241245125125125125)
   .then(doc => console.log(`[error? resolved]`, doc))
@@ -69,3 +65,8 @@ SEARCH_OPTIONS.forEach(options =>
     .then(docs => console.log(`[search][env resolved] options=${JSON.stringify(options)}`, docs))
     .catch(err => console.log('[search][env rejected]', err))
 );
+
+// Deprecated `fetchMany` function. Should reject
+
+fetchMany(null, null, err => console.log('[fetchMany][env rejected]', err));
+fetchMany(null, null).catch(err => console.log('[fetchMany][env rejected]', err));
