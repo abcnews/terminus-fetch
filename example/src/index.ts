@@ -4,7 +4,8 @@ const FETCH_OPTIONS = [
   10736062,
   { id: 10735012, type: 'imageproxy' },
   { id: 10734902, type: 'video' },
-  { id: 123860, type: 'show', source: 'iview' }
+  { id: 123860, type: 'show', source: 'iview' },
+  100002964 // CM10
 ];
 const FETCH_OPTIONS_TEASABLE_MIXIN = {
   isTeasable: true

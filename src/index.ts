@@ -44,6 +44,11 @@ const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
   source: DEFAULT_DOCUMENT_OPTIONS.source
 };
 
+function getVersion({ source, id }: DocumentOptions): string {
+  // Until Terminus V2 is used exclusively, we only need to send requests to it for CM10 content (id >= 100000000)
+  return source === 'coremedia' && (typeof id === 'number' ? id : parseInt(id, 10)) >= 1e8 ? 'v2' : 'v1';
+}
+
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID): Promise<TerminusDocument>;
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done: Done<TerminusDocument>): void;
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): any {
@@ -60,7 +65,7 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
       }
 
       request(
-        `${getEndpoint(forceLive, forcePreview)}/api/v1/${
+        `${getEndpoint(forceLive, forcePreview)}/api/${getVersion({ source, id })}/${
           isTeasable ? 'teasable' : ''
         }content/${source}/${type}/${id}?apikey=${apikey}`,
         resolve,
