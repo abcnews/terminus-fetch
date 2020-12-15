@@ -26,10 +26,10 @@ type Done<T> = Callback<ProgressEvent | Error, T>;
 // This built JS asset _will_be_ rewritten on-the-fly, so we need to obscure the origin somewhat
 const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '.abc.net.au'].join(''), 'g');
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
-const PREVIEW_HOSTNAME = 'aus.aunty.abc.net.au';
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
-const IS_PREVIEW = window.location.hostname.indexOf(PREVIEW_HOSTNAME) > -1;
+const HOSTNAME = window.location.hostname;
+const IS_PREVIEW = HOSTNAME.indexOf('preview.presentation-layer') > -1 || HOSTNAME.indexOf('aus.aunty.abc.net.au') > -1;
 const HAS_LIVE_FLAG = window.location.search.indexOf('prod') > -1;
 const TERMINUS_ENV_BASED_ENDPOINT = !IS_PREVIEW || HAS_LIVE_FLAG ? TERMINUS_LIVE_ENDPOINT : TERMINUS_PREVIEW_ENDPOINT;
 const DEFAULT_API_OPTIONS: APIOptions = {
