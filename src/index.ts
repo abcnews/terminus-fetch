@@ -124,7 +124,7 @@ function ensureIsDocumentOptions(options: DocumentOptionsOrDocumentID): Document
 }
 
 function isDocumentIDInvalid(documentID: DocumentID): boolean {
-  return documentID != +documentID && !String(documentID).length;
+  return documentID != +documentID || !String(documentID).length || String(documentID).indexOf('.') > -1;
 }
 
 function getEndpoint(forceLive: boolean, forcePreview: boolean): string {

@@ -55,6 +55,7 @@ FETCH_OPTIONS.forEach(options => {
     .catch(err => console.log('[env rejected]', err));
 });
 
+// Using an invalid id (floating point number)
 terminusFetch(1241241241241245125125125125)
   .then(doc => console.log(`[error? resolved]`, doc))
   .catch(err => console.log('[error? rejected]', err));
