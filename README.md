@@ -147,8 +147,8 @@ These are the same as `fetchOne`, only split across two options arguments.
 
 To run the `/example` project:
 
-1. Start the development server with: `npm start`
-2. Visit `http:<machine_name>.aus.aunty.abc.net.au:8080`
+1. Start the development server with: `npm run example`
+2. Visit `http:<machine_name>.aus.aunty.abc.net.au:1234`
 3. Open the browser's development console
 
 ### Releasing

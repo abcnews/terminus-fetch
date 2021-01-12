@@ -1,10 +1,10 @@
-# dependencies
-node_modules
-
-# builds
-.rts2_cache_*
-dist
-
-# misc
+*.log
 .DS_Store
-npm-debug.log
+node_modules
+.rts2_cache_cjs
+.rts2_cache_esm
+.rts2_cache_umd
+.rts2_cache_system
+.cache
+bin
+dist

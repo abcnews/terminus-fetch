@@ -10,32 +10,45 @@
     "type": "git",
     "url": "git+https://github.com/abcnews/terminus-fetch.git"
   },
-  "main": "dist/terminus-fetch.js",
-  "module": "dist/terminus-fetch.mjs",
-  "source": "src/index.ts",
+  "bugs": {
+    "url": "https://github.com/abcnews/terminus-fetch/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/terminus-fetch.esm.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "alias": {
+    "lib": "./src/index"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint src"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
-  "minify": {
-    "mangle": {
-      "reserved": [
-        "terminusFetch"
-      ]
-    }
-  },
   "scripts": {
-    "start": "http-server example --silent & npm run watch",
-    "watch": "microbundle watch --entry example/src/index.ts --output example/dist/bundle.js --format umd",
-    "build": "microbundle --format cjs,es --no-sourcemap",
-    "prepare": "npm run build",
-    "release": "release-it"
+    "example": "parcel serve example/index.html --out-dir example/dist",
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "lint": "tsdx lint src",
+    "prepublishOnly": "npm run build",
+    "release": "np"
   },
   "devDependencies": {
-    "http-server": "^0.12.1",
-    "microbundle": "^0.12.0-next.8",
-    "release-it": "^12.6.1"
+    "@babel/core": "^7.12.10",
+    "husky": "^4.3.7",
+    "np": "^7.2.0",
+    "parcel-bundler": "^1.12.4",
+    "rollup": "^2.36.1",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.1.0",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "lib": "^4.3.0"
   }
 }
