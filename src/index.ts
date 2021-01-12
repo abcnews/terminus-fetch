@@ -18,7 +18,10 @@ interface SearchOptions extends APIOptions {
   [x: string]: any;
 }
 interface TerminusDocument {
-  _links: {};
+  _links?: {};
+  _embedded?: {
+    [key: string]: TerminusDocument[];
+  };
 }
 type Callback<E, T> = (err?: E, result?: T) => void;
 type Done<T> = Callback<ProgressEvent | Error, T>;
@@ -44,7 +47,7 @@ const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
   source: DEFAULT_DOCUMENT_OPTIONS.source
 };
 
-function getVersion({ source, id }: DocumentOptions): string {
+function getVersion({ source, id }: DocumentOptions & { id: DocumentID }): string {
   // Until Terminus V2 is used exclusively, we only need to send requests to it for CM10 content (id >= 100000000)
   return source === 'coremedia' && (typeof id === 'number' ? id : parseInt(id, 10)) >= 1e8 ? 'v2' : 'v1';
 }
@@ -60,14 +63,15 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
         ...ensureIsDocumentOptions(fetchOneOptions)
       };
 
-      if (isDocumentIDInvalid(id)) {
+      if (isDocumentIDInvalid(id as DocumentID)) {
         return reject(new Error(`Invalid ID: ${id}`));
       }
 
       request(
-        `${getEndpoint(forceLive, forcePreview)}/api/${getVersion({ source, id })}/${
-          isTeasable ? 'teasable' : ''
-        }content/${source}/${type}/${id}?apikey=${apikey}`,
+        `${getEndpoint(!forceLive, !forcePreview)}/api/${getVersion({
+          source,
+          id: id as DocumentID
+        })}/${isTeasable ? 'teasable' : ''}content/${source}/${type}/${id}?apikey=${apikey}`,
         resolve,
         reject
       );
@@ -105,10 +109,10 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
       const searchParamsKeys = Object.keys(searchParams);
 
       request(
-        `${getEndpoint(forceLive, forcePreview)}/api/v1/search/${source}?${searchParamsKeys
+        `${getEndpoint(!forceLive, !forcePreview)}/api/v1/search/${source}?${searchParamsKeys
           .map(key => `${key}=${searchParams[key]}`)
           .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${apikey}`,
-        response => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
+        (response: TerminusDocument) => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
         reject
       );
     }),
@@ -117,11 +121,11 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
 }
 
 function asyncTask(promise: Promise<any>, callback?: Callback<any, any>) {
-  if (callback) {
-    promise.then(result => setTimeout(callback, 0, null, result)).catch(err => setTimeout(callback, 0, err));
-  } else {
+  if (!callback) {
     return promise;
   }
+
+  return promise.then(result => setTimeout(callback, 0, null, result)).catch(err => setTimeout(callback, 0, err));
 }
 
 function ensureIsDocumentOptions(options: DocumentOptionsOrDocumentID): DocumentOptions {
@@ -153,8 +157,8 @@ function parse(responseText: string): TerminusDocument {
   return JSON.parse(responseText.replace(GENIUNE_MEDIA_ENDPOINT_PATTERN, PROXIED_MEDIA_ENDPOINT));
 }
 
-function flattenEmbeddedProps(_embedded: Object) {
-  return Object.keys(_embedded).reduce((memo, key) => memo.concat(_embedded[key]), []);
+function flattenEmbeddedProps(_embedded: { [key: string]: TerminusDocument[] }) {
+  return Object.keys(_embedded).reduce((memo, key) => memo.concat(_embedded[key]), [] as TerminusDocument[]);
 }
 
 export default fetchOne;
