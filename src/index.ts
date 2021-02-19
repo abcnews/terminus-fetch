@@ -1,3 +1,5 @@
+import { TIERS, getTier } from '@abcnews/env-utils';
+
 type DocumentID = string | number;
 interface APIOptions {
   apikey?: string;
@@ -31,10 +33,7 @@ const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
-const HOSTNAME = window.location.hostname;
-const IS_PREVIEW = HOSTNAME.indexOf('preview.presentation-layer') > -1 || HOSTNAME.indexOf('aus.aunty.abc.net.au') > -1;
 const HAS_LIVE_FLAG = window.location.search.indexOf('prod') > -1;
-const TERMINUS_ENV_BASED_ENDPOINT = !IS_PREVIEW || HAS_LIVE_FLAG ? TERMINUS_LIVE_ENDPOINT : TERMINUS_PREVIEW_ENDPOINT;
 const DEFAULT_API_OPTIONS: APIOptions = {
   apikey: '54564fe299e84f46a57057266fcf233b'
 };
@@ -67,8 +66,19 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
         return reject(new Error(`Invalid ID: ${id}`));
       }
 
+      console.log({
+        source,
+        type,
+        id,
+        apikey,
+        isTeasable,
+        forceLive,
+        forcePreview,
+        endpoint: getEndpoint(forceLive, forcePreview)
+      });
+
       request(
-        `${getEndpoint(!forceLive, !forcePreview)}/api/${getVersion({
+        `${getEndpoint(forceLive, forcePreview)}/api/${getVersion({
           source,
           id: id as DocumentID
         })}/${isTeasable ? 'teasable' : ''}content/${source}/${type}/${id}?apikey=${apikey}`,
@@ -109,7 +119,7 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
       const searchParamsKeys = Object.keys(searchParams);
 
       request(
-        `${getEndpoint(!forceLive, !forcePreview)}/api/v1/search/${source}?${searchParamsKeys
+        `${getEndpoint(forceLive, forcePreview)}/api/v1/search/${source}?${searchParamsKeys
           .map(key => `${key}=${searchParams[key]}`)
           .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${apikey}`,
         (response: TerminusDocument) => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
@@ -136,8 +146,14 @@ function isDocumentIDInvalid(documentID: DocumentID): boolean {
   return documentID != +documentID || !String(documentID).length || String(documentID).indexOf('.') > -1;
 }
 
-function getEndpoint(forceLive: boolean, forcePreview: boolean): string {
-  return forceLive ? TERMINUS_LIVE_ENDPOINT : forcePreview ? TERMINUS_PREVIEW_ENDPOINT : TERMINUS_ENV_BASED_ENDPOINT;
+function getEndpoint(forceLive?: boolean, forcePreview?: boolean): string {
+  return forceLive
+    ? TERMINUS_LIVE_ENDPOINT
+    : forcePreview
+    ? TERMINUS_PREVIEW_ENDPOINT
+    : getTier() !== TIERS.PREVIEW || HAS_LIVE_FLAG
+    ? TERMINUS_LIVE_ENDPOINT
+    : TERMINUS_PREVIEW_ENDPOINT;
 }
 
 function request(uri: string, resolve: Function, reject: Function) {

@@ -49,6 +49,6 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "lib": "^4.3.0"
+    "@abcnews/env-utils": "^2.1.2"
   }
 }
