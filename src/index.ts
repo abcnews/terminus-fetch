@@ -66,17 +66,6 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
         return reject(new Error(`Invalid ID: ${id}`));
       }
 
-      console.log({
-        source,
-        type,
-        id,
-        apikey,
-        isTeasable,
-        forceLive,
-        forcePreview,
-        endpoint: getEndpoint(forceLive, forcePreview)
-      });
-
       request(
         `${getEndpoint(forceLive, forcePreview)}/api/${getVersion({
           source,
