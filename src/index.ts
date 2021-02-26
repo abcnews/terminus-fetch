@@ -102,7 +102,7 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
     new Promise((resolve, reject) => {
       const { apikey, forceLive, forcePreview, source, ...searchParams } = {
         ...DEFAULT_SEARCH_OPTIONS,
-        ...(searchOptions || <SearchOptions>{})
+        ...(searchOptions || ({} as SearchOptions))
       };
       const searchParamsKeys = Object.keys(searchParams);
 
