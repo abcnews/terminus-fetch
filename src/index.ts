@@ -33,7 +33,6 @@ const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
-const HAS_LIVE_FLAG = window.location.search.indexOf('prod') > -1;
 const DEFAULT_API_OPTIONS: APIOptions = {
   apikey: '54564fe299e84f46a57057266fcf233b'
 };
@@ -140,7 +139,7 @@ function getEndpoint(forceLive?: boolean, forcePreview?: boolean): string {
     ? TERMINUS_LIVE_ENDPOINT
     : forcePreview
     ? TERMINUS_PREVIEW_ENDPOINT
-    : getTier() !== TIERS.PREVIEW || HAS_LIVE_FLAG
+    : getTier() !== TIERS.PREVIEW
     ? TERMINUS_LIVE_ENDPOINT
     : TERMINUS_PREVIEW_ENDPOINT;
 }
