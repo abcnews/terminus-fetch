@@ -1,4 +1,4 @@
-import terminusFetch, { fetchOne, fetchMany, search } from '../../src/index';
+import terminusFetch, { fetchOne, search } from '../../src/index';
 
 const FETCH_OPTIONS = [
   10736062,
@@ -67,8 +67,3 @@ SEARCH_OPTIONS.forEach(options =>
     .then(docs => console.log(`[search][env resolved] options=${JSON.stringify(options)}`, docs))
     .catch(err => console.log('[search][env rejected]', err))
 );
-
-// Deprecated `fetchMany` function. Should reject
-
-fetchMany(null, null, err => console.log('[fetchMany][env rejected]', err));
-fetchMany(null, null).catch(err => console.log('[fetchMany][env rejected]', err));
