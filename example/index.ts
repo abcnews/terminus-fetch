@@ -1,4 +1,5 @@
-import terminusFetch, { fetchOne, search } from '../../src/index';
+import terminusFetch, { fetchOne, search } from '../src/index';
+import type {DocumentOptions} from '../src/index'
 
 const FETCH_OPTIONS = [
   10736062,
@@ -38,13 +39,13 @@ FETCH_OPTIONS.map(x => ({
 );
 FETCH_OPTIONS.map(x => ({
   ...ensureObject(x),
-  forceLive: true
+  force: 'live'
 })).forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[live] options=${JSON.stringify(options)}`, err, doc))
 );
 FETCH_OPTIONS.map(x => ({
   ...ensureObject(x),
-  forcePreview: true
+  force: 'preview'
 })).forEach(options =>
   terminusFetch(options, (err, doc) => console.log(`[preview] options=${JSON.stringify(options)}`, err, doc))
 );
@@ -58,6 +59,11 @@ FETCH_OPTIONS.forEach(options => {
 
 // Using an invalid id (floating point number)
 terminusFetch(1241241241241245125125125125)
+  .then(doc => console.log(`[error? resolved]`, doc))
+  .catch(err => console.log('[error? rejected]', err));
+
+// Using version 1
+terminusFetch({id: 10736062, version:'v1'})
   .then(doc => console.log(`[error? resolved]`, doc))
   .catch(err => console.log('[error? rejected]', err));
 
