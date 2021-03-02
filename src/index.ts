@@ -78,23 +78,6 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
   );
 }
 
-function fetchMany(
-  documentsOptions: DocumentOptionsOrDocumentID[],
-  apiOptions: APIOptions
-): Promise<TerminusDocument[]>;
-function fetchMany(
-  documentsOptions: DocumentOptionsOrDocumentID[],
-  apiOptions: APIOptions,
-  done: Done<TerminusDocument[]>
-): void;
-function fetchMany(
-  _documentsOptions: DocumentOptionsOrDocumentID[],
-  _apiOptions?: APIOptions,
-  done?: Done<TerminusDocument[]>
-): any {
-  return asyncTask(Promise.reject(new Error('The `fetchMany` function is no longer supported')), done);
-}
-
 function search(searchOptions: SearchOptions): Promise<TerminusDocument[]>;
 function search(searchOptions: SearchOptions, done: Done<TerminusDocument[]>): void;
 function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): any {
@@ -166,4 +149,4 @@ function flattenEmbeddedProps(_embedded: { [key: string]: TerminusDocument[] }) 
 }
 
 export default fetchOne;
-export { fetchOne, fetchMany, search };
+export { fetchOne, search };
