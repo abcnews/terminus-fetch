@@ -1,13 +1,14 @@
 import { TIERS, getTier } from '@abcnews/env-utils';
 
 type DocumentID = string | number;
+type APIVersions = 'v1' | 'v2';
 interface APIOptions {
   apikey?: string;
-  forceLive?: boolean;
-  forcePreview?: boolean;
+  force?: TIERS;
+  version?: APIVersions;
   isTeasable?: boolean;
 }
-interface DocumentOptions {
+export interface DocumentOptions {
   source?: string;
   type?: string;
   id?: DocumentID;
@@ -33,9 +34,9 @@ const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
-const HAS_LIVE_FLAG = window.location.search.indexOf('prod') > -1;
 const DEFAULT_API_OPTIONS: APIOptions = {
-  apikey: '54564fe299e84f46a57057266fcf233b'
+  apikey: '54564fe299e84f46a57057266fcf233b',
+  version: 'v2'
 };
 const DEFAULT_DOCUMENT_OPTIONS: DocumentOptions = {
   source: 'coremedia',
@@ -46,9 +47,17 @@ const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
   source: DEFAULT_DOCUMENT_OPTIONS.source
 };
 
-function getVersion({ source, id }: DocumentOptions & { id: DocumentID }): string {
-  // Until Terminus V2 is used exclusively, we only need to send requests to it for CM10 content (id >= 100000000)
-  return source === 'coremedia' && (typeof id === 'number' ? id : parseInt(id, 10)) >= 1e8 ? 'v2' : 'v1';
+// the base url is the domain and path including the version
+function getBaseUrl({ force, version }: DocumentOptions & APIOptions): string {
+  const queryMatch = window.location.search.match(/terminusBaseURL=(https:\/\/[^&]+)/);
+  return queryMatch ? queryMatch[1] : `${getEndpoint(force)}/api/${version}`;
+}
+
+// The endpoint is the domain and path to the API, excluding the version
+function getEndpoint(force?: TIERS): string {
+  return (getTier() === TIERS.PREVIEW || force === TIERS.PREVIEW) && force !== TIERS.LIVE
+    ? TERMINUS_PREVIEW_ENDPOINT
+    : TERMINUS_LIVE_ENDPOINT;
 }
 
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID): Promise<TerminusDocument>;
@@ -56,7 +65,7 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done: Done<Termi
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): any {
   return asyncTask(
     new Promise((resolve, reject) => {
-      const { source, type, id, apikey, isTeasable, forceLive, forcePreview } = {
+      const { source, type, id, apikey, isTeasable, force, version } = {
         ...DEFAULT_API_OPTIONS,
         ...DEFAULT_DOCUMENT_OPTIONS,
         ...ensureIsDocumentOptions(fetchOneOptions)
@@ -67,10 +76,9 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
       }
 
       request(
-        `${getEndpoint(forceLive, forcePreview)}/api/${getVersion({
-          source,
-          id: id as DocumentID
-        })}/${isTeasable ? 'teasable' : ''}content/${source}/${type}/${id}?apikey=${apikey}`,
+        `${getBaseUrl({ force, version })}/${
+          isTeasable ? 'teasable' : ''
+        }content/${source}/${type}/${id}?apikey=${apikey}`,
         resolve,
         reject
       );
@@ -79,36 +87,19 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
   );
 }
 
-function fetchMany(
-  documentsOptions: DocumentOptionsOrDocumentID[],
-  apiOptions: APIOptions
-): Promise<TerminusDocument[]>;
-function fetchMany(
-  documentsOptions: DocumentOptionsOrDocumentID[],
-  apiOptions: APIOptions,
-  done: Done<TerminusDocument[]>
-): void;
-function fetchMany(
-  _documentsOptions: DocumentOptionsOrDocumentID[],
-  _apiOptions?: APIOptions,
-  done?: Done<TerminusDocument[]>
-): any {
-  return asyncTask(Promise.reject(new Error('The `fetchMany` function is no longer supported')), done);
-}
-
 function search(searchOptions: SearchOptions): Promise<TerminusDocument[]>;
 function search(searchOptions: SearchOptions, done: Done<TerminusDocument[]>): void;
 function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): any {
   return asyncTask(
     new Promise((resolve, reject) => {
-      const { apikey, forceLive, forcePreview, source, ...searchParams } = {
+      const { apikey, force, source, version, ...searchParams } = {
         ...DEFAULT_SEARCH_OPTIONS,
-        ...(searchOptions || <SearchOptions>{})
+        ...(searchOptions || ({} as SearchOptions))
       };
       const searchParamsKeys = Object.keys(searchParams);
 
       request(
-        `${getEndpoint(forceLive, forcePreview)}/api/v1/search/${source}?${searchParamsKeys
+        `${getBaseUrl({ force, version })}/search/${source}?${searchParamsKeys
           .map(key => `${key}=${searchParams[key]}`)
           .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${apikey}`,
         (response: TerminusDocument) => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
@@ -119,12 +110,11 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
   );
 }
 
+// Enable easy support for both promise and callback interfaces
 function asyncTask(promise: Promise<any>, callback?: Callback<any, any>) {
-  if (!callback) {
-    return promise;
-  }
-
-  return promise.then(result => setTimeout(callback, 0, null, result)).catch(err => setTimeout(callback, 0, err));
+  return callback
+    ? promise.then(result => setTimeout(callback, 0, null, result)).catch(err => setTimeout(callback, 0, err))
+    : promise;
 }
 
 function ensureIsDocumentOptions(options: DocumentOptionsOrDocumentID): DocumentOptions {
@@ -133,16 +123,6 @@ function ensureIsDocumentOptions(options: DocumentOptionsOrDocumentID): Document
 
 function isDocumentIDInvalid(documentID: DocumentID): boolean {
   return documentID != +documentID || !String(documentID).length || String(documentID).indexOf('.') > -1;
-}
-
-function getEndpoint(forceLive?: boolean, forcePreview?: boolean): string {
-  return forceLive
-    ? TERMINUS_LIVE_ENDPOINT
-    : forcePreview
-    ? TERMINUS_PREVIEW_ENDPOINT
-    : getTier() !== TIERS.PREVIEW || HAS_LIVE_FLAG
-    ? TERMINUS_LIVE_ENDPOINT
-    : TERMINUS_PREVIEW_ENDPOINT;
 }
 
 function request(uri: string, resolve: Function, reject: Function) {
@@ -167,4 +147,4 @@ function flattenEmbeddedProps(_embedded: { [key: string]: TerminusDocument[] }) 
 }
 
 export default fetchOne;
-export { fetchOne, fetchMany, search };
+export { fetchOne, search };
