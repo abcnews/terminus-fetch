@@ -141,7 +141,7 @@ function isDocumentIDInvalid(documentID: DocumentID): boolean {
 function request(uri: string, resolve: Function, reject: Function) {
   const xhr = new XMLHttpRequest();
   const errorHandler = (event: ProgressEvent) => reject(event);
-  console.log('uri :>> ', uri);
+
   xhr.onload = event => (xhr.status !== 200 ? reject(event) : resolve(parse(xhr.responseText)));
   xhr.onabort = errorHandler;
   xhr.onerror = errorHandler;
