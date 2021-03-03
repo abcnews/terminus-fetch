@@ -143,6 +143,50 @@ If the `done` callback is omitted then the return value will be a Promise.
 
 These are the same as `fetchOne`, only split across two options arguments.
 
+### `getImageRendition`
+
+Takes image crop data and `binaryKey` as returned from the Terminus v2 API and returns a URL to the image binary at the requested `targetWidth`.
+
+```ts
+declare function getImageRendition(binaryKey: string, crop: CropData, targetWidth: number, force?: TIERS): string;
+```
+
+Crop data can be found on an Image or Image Proxy document at `media.image.primary.ratios[<ratio>]`.
+
+```ts
+type CropData = {
+  cropHeight: number;
+  cropWidth: number;
+  x: number;
+  y: number;
+};
+```
+
+### `getImageRenditions`
+
+This is a wrapper around `getImageRendition` to return multiple ratio and width rendition URLs.
+
+```ts
+declare function getImageRenditions(
+  binaryKey: string,
+  crops: CropsData,
+  targetWidths: number[],
+  force?: TIERS
+): ImageRendition[];
+```
+
+Rather than a single `targetWith` value it takes an array of desired target widths. An instead of a single crop data object it takes an object keyed with the ratio string. This is taken straight from the Terminus v2 response.
+
+```json
+{
+  "16x9": { "cropHeight": 1406, "cropWidth": 2500, "x": 0, "y": 0 },
+  "1x1": { "cropHeight": 1558, "cropWidth": 1558, "x": 471, "y": 0 },
+  "3x2": { "cropHeight": 1558, "cropWidth": 2335, "x": 82, "y": 0 },
+  "3x4": { "cropHeight": 1558, "cropWidth": 1170, "x": 665, "y": 0 },
+  "4x3": { "cropHeight": 1558, "cropWidth": 2077, "x": 211, "y": 0 }
+}
+```
+
 ## Developing
 
 To run the `/example` project:

@@ -29,11 +29,24 @@ interface TerminusDocument {
 type Callback<E, T> = (err?: E, result?: T) => void;
 type Done<T> = Callback<ProgressEvent | Error, T>;
 
+type CropData = {
+  cropHeight: number;
+  cropWidth: number;
+  x: number;
+  y: number;
+};
+
+type CropsData = {
+  [key: string]: CropData;
+};
+
 // This built JS asset _will_be_ rewritten on-the-fly, so we need to obscure the origin somewhat
 const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '.abc.net.au'].join(''), 'g');
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
+const IMAGE_LIVE_ENDPOINT = 'https://live-production.wcms.abc-cdn.net.au';
+const IMAGE_PREVIEW_ENDPOINT = 'https://preview-production.wcms.abc-cdn.net.au';
 const DEFAULT_API_OPTIONS: APIOptions = {
   apikey: '54564fe299e84f46a57057266fcf233b',
   version: 'v2'
@@ -146,5 +159,39 @@ function flattenEmbeddedProps(_embedded: { [key: string]: TerminusDocument[] }) 
   return Object.keys(_embedded).reduce((memo, key) => memo.concat(_embedded[key]), [] as TerminusDocument[]);
 }
 
+// Generates ABC CDN's Akamai crop/resize image binary URLs
+// This is only relevant for Terminus v2 data
+function getImageRendition(binaryKey: string, crop: CropData, targetWidth: number, force?: TIERS): string {
+  const ratio = crop.cropHeight / crop.cropWidth;
+  const endpoint =
+    (getTier() === TIERS.PREVIEW || force === TIERS.PREVIEW) && force !== TIERS.LIVE
+      ? IMAGE_PREVIEW_ENDPOINT
+      : IMAGE_LIVE_ENDPOINT;
+  return `${endpoint}/${binaryKey}?impolicy=wcms_crop_resize&cropH=${crop.cropHeight}&cropW=${crop.cropWidth}&xPos=${
+    crop.x
+  }&yPos=${crop.y}&width=${targetWidth}&height=${Math.round(targetWidth * ratio)}`;
+}
+
+type ImageRendition = { width: number; ratio: string; url: string };
+
+function getImageRenditions(
+  binaryKey: string,
+  crops: CropsData,
+  targetWidths: number[],
+  force?: TIERS
+): ImageRendition[] {
+  const result: ImageRendition[] = [];
+  Object.keys(crops).forEach(ratio => {
+    targetWidths.forEach(targetWidth => {
+      result.push({
+        url: getImageRendition(binaryKey, crops[ratio], targetWidth, force),
+        width: targetWidth,
+        ratio: ratio
+      });
+    });
+  });
+  return result;
+}
+
 export default fetchOne;
-export { fetchOne, search };
+export { fetchOne, search, getImageRendition, getImageRenditions };
