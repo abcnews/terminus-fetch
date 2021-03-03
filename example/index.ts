@@ -1,10 +1,10 @@
 import terminusFetch, { fetchOne, search } from '../src/index';
-import type {DocumentOptions} from '../src/index'
 
 const FETCH_OPTIONS = [
   10736062,
   { id: 10735012, type: 'imageproxy' },
   { id: 10734902, type: 'video' },
+  { id: 13207432, type: 'teaser' }, // Video teaser
   { id: 123860, type: 'show', source: 'iview' },
   100002964 // CM10
 ];
@@ -63,7 +63,7 @@ terminusFetch(1241241241241245125125125125)
   .catch(err => console.log('[error? rejected]', err));
 
 // Using version 1
-terminusFetch({id: 10736062, version:'v1'})
+terminusFetch({ id: 10736062, version: 'v1' })
   .then(doc => console.log(`[error? resolved]`, doc))
   .catch(err => console.log('[error? rejected]', err));
 
