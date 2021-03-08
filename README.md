@@ -143,49 +143,54 @@ If the `done` callback is omitted then the return value will be a Promise.
 
 These are the same as `fetchOne`, only split across two options arguments.
 
-### `getImageRendition`
+### `getImageData`
 
-Takes image crop data and `binaryKey` as returned from the Terminus v2 API and returns a URL to the image binary at the requested `targetWidth`.
+This takes an image document returned from terminus (Imge, ImageProxy or CustomImage doctypes) and returns
+a normalised object including available image renditions.
 
 ```ts
-declare function getImageRendition(binaryKey: string, crop: CropData, targetWidth: number, force?: TIERS): string;
+declare function getImages(doc: any, targetWidths?: number[]): ImageData;
 ```
 
-Crop data can be found on an Image or Image Proxy document at `media.image.primary.ratios[<ratio>]`.
+#### `targetWidths` argument (optional)
+
+There is no guarantee that the returned object will contain the widths requested using the `targetWidths` argument. Consumers of this library should always check the result to see if they got what they wanted and behave accordingly.
+
+Default for this argument is: `[160, 240, 480, 700, 940, 1400, 2150]`
+
+The argument is optional and behaves slightly differently depending on whether the passed document is from a request to v1 or v2 of the API.
+
+- _v1 documents_: this argument is completely ignored and the returned object will contain all available image sizes.
+- _v2 documents_: rendition URLs for every available aspect ratio will be generated for every requested width.
+
+_Note:_ There is also no guarantee about which aspect ratios are available for a given image.
+
+#### Returned object
+
+The results have the following type:
 
 ```ts
-type CropData = {
-  cropHeight: number;
-  cropWidth: number;
-  x: number;
-  y: number;
+declare type ImageData = {
+  cmid: string;
+  title?: string;
+  alt?: string;
+  caption?: string;
+  attribution?: string;
+  canonicalURL: string;
+  renditions: ImageRendition[];
+};
+declare type ImageRendition = {
+  width: number;
+  height: number;
+  ratio: string;
+  url: string;
+  isUndersizedBinary: boolean;
 };
 ```
 
-### `getImageRenditions`
+There are a couple of gotchas in here related to image proxies. The `cmid` and `canonicalURL` properties will be those of the proxy, not the target image. While it's possible to return the ID of the proxied image from v1 documents, it's not on v2. So for the sake of standardisation, both will return the proxy ID and URL.
 
-This is a wrapper around `getImageRendition` to return multiple ratio and width rendition URLs.
-
-```ts
-declare function getImageRenditions(
-  binaryKey: string,
-  crops: CropsData,
-  targetWidths: number[],
-  force?: TIERS
-): ImageRendition[];
-```
-
-Rather than a single `targetWith` value it takes an array of desired target widths. An instead of a single crop data object it takes an object keyed with the ratio string. This is taken straight from the Terminus v2 response.
-
-```json
-{
-  "16x9": { "cropHeight": 1406, "cropWidth": 2500, "x": 0, "y": 0 },
-  "1x1": { "cropHeight": 1558, "cropWidth": 1558, "x": 471, "y": 0 },
-  "3x2": { "cropHeight": 1558, "cropWidth": 2335, "x": 82, "y": 0 },
-  "3x4": { "cropHeight": 1558, "cropWidth": 1170, "x": 665, "y": 0 },
-  "4x3": { "cropHeight": 1558, "cropWidth": 2077, "x": 211, "y": 0 }
-}
-```
+In v2 responses, it's possible that the binary URL a rendition points to is acctually smaller than the dimensions in the object. This is because small originals are never upscaled by the image resizer, but can still be requested. This situation is flagged by the `isUndersizedBinary` property.
 
 ## Developing
 
