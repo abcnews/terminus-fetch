@@ -143,7 +143,7 @@ If the `done` callback is omitted then the return value will be a Promise.
 
 These are the same as `fetchOne`, only split across two options arguments.
 
-### `getImageData`
+### `getImages`
 
 This takes an image document returned from terminus (Imge, ImageProxy or CustomImage doctypes) and returns
 a normalised object including available image renditions.
