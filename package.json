@@ -50,6 +50,6 @@
     "typescript": "^4.2.2"
   },
   "dependencies": {
-    "@abcnews/env-utils": "^2.1.2"
+    "@abcnews/env-utils": "^3.0.0"
   }
 }
