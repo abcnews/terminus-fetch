@@ -51,7 +51,7 @@ const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
 // the base url is the domain and path including the version
 function getBaseUrl({ force, version }: DocumentOptions & APIOptions): string {
   const queryMatch = window.location.search.match(/terminusBaseURL=(https:\/\/[^&]+)/);
-  return queryMatch ? queryMatch[1] : `${getEndpoint(force)}/api/${version}`;
+  return queryMatch ? queryMatch[1].replace('.private', '') : `${getEndpoint(force)}/api/${version}`;
 }
 
 // The endpoint is the domain and path to the API, excluding the version
