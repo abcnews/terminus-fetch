@@ -71,9 +71,9 @@ search({ limit: 1, source: 'mapi', service: 'triplej'})
 
 If your project's JS is currently executing in a page on `aus.aunty.abc.net.au`, requests will be made to Preview Terminus (`https://api-preview.terminus.abc-prod.net.au/api/v1/{teasable}content`), otherwise they'll be made to Live Terminus (`https://api.abc.net.au/terminus/api/v1/{teasable}content`).
 
-If you want to direct a single request to Live Terminus, regardless of the current execution domain, pass `forceLive: true` as an option.
+If you want to direct a single request to Live Terminus, regardless of the current execution domain, pass `force: "live"` as an option.
 
-If you want to direct a single request to Preview Terminus, regardless of the current execution domain, pass `forcePreview: true` as an option.
+If you want to direct a single request to Preview Terminus, regardless of the current execution domain, pass `force: "preview"` as an option.
 
 If you want only need a document's metadata (e.g. an article without full text content), pass `isTeasable: true` as an option and the document will be fetched from the `/teasablecontent/` API, instead of the `/content/` API.
 
@@ -91,8 +91,7 @@ declare function fetchOne(
         type?: string;
         id?: string | number;
         apikey?: string;
-        forceLive?: boolean;
-        forcePreview?: boolean;
+        force?: "preview" | "live";
         isTeasable?: string;
       },
   done?: (err?: ProgressEvent | Error, doc?: Object) => void
@@ -118,8 +117,7 @@ declare function search(
   options: {
     source?: string;
     apikey?: string;
-    forceLive?: boolean;
-    forcePreview?: boolean;
+    force?: "preview" | "live";
     ...searchParams: Object;
   },
   done?: (err?: ProgressEvent | Error, doc?: Object) => void
