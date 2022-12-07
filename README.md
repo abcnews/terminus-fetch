@@ -8,13 +8,14 @@ $ npm i @abcnews/terminus-fetch
 
 ## Usage
 
+To use this library, you must have a Terminus API key, and expose it on the enviromnent variable `TERMINUS_FETCH_API_KEY`. For `@abcnews/aunty`-based projects, we currently recommend placing it in a `.env` file in your project directory, so that it is bundled with your app.
+
 ```js
 import { fetchOne, search } from '@abcnews/terminus-fetch';
 // We export fetchOne by default, as it's most commmonly used:
 import fetchOne from '@abcnews/terminus-fetch';
 
-// By default, we assume you want an Article docment from
-// Core Media, using News' API key, so you can pass a CMID:
+// By default, we assume you want an Article docment from Core Media so you can pass a CMID:
 
 fetchOne(10736062, (err, doc) => {
   if (!err) {
@@ -90,8 +91,7 @@ declare function fetchOne(
         source?: string;
         type?: string;
         id?: string | number;
-        apikey?: string;
-        force?: "preview" | "live";
+        force?: 'preview' | 'live';
         isTeasable?: string;
       },
   done?: (err?: ProgressEvent | Error, doc?: Object) => void
@@ -106,7 +106,6 @@ If the `done` callback is omitted then the return value will be a Promise.
 {
   source: 'coremedia',
   type: 'article',
-  apikey: '54564fe299e84f46a57057266fcf233b' /* (News) */
 }
 ```
 
@@ -116,7 +115,6 @@ If the `done` callback is omitted then the return value will be a Promise.
 declare function search(
   options: {
     source?: string;
-    apikey?: string;
     force?: "preview" | "live";
     ...searchParams: Object;
   },
@@ -194,9 +192,10 @@ In v2 responses, it's possible that the binary URL a rendition points to is acct
 
 To run the `/example` project:
 
-1. Start the development server with: `npm run example`
-2. Visit `http:<machine_name>.aus.aunty.abc.net.au:1234`
-3. Open the browser's development console
+1. Copy `.env.example` to `.env` and add your Terminus API key
+2. Start the development server with: `npm run example`
+3. Visit `http:<machine_name>.aus.aunty.abc.net.au:1234`
+4. Open the browser's development console
 
 ### Releasing
 

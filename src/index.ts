@@ -4,7 +4,6 @@ import { getImages } from './lib/images';
 type DocumentID = string | number;
 type APIVersions = 'v1' | 'v2';
 interface APIOptions {
-  apikey?: string;
   force?: TIERS;
   version?: APIVersions;
   isTeasable?: boolean;
@@ -33,10 +32,10 @@ type Done<T> = Callback<ProgressEvent | Error, T>;
 // This built JS asset _will_be_ rewritten on-the-fly, so we need to obscure the origin somewhat
 const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '.abc.net.au'].join(''), 'g');
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
+const API_KEY = process.env.TERMINUS_FETCH_API_KEY;
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
 const DEFAULT_API_OPTIONS: APIOptions = {
-  apikey: '54564fe299e84f46a57057266fcf233b',
   version: 'v2'
 };
 const DEFAULT_DOCUMENT_OPTIONS: DocumentOptions = {
@@ -66,7 +65,7 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done: Done<Termi
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): any {
   return asyncTask(
     new Promise((resolve, reject) => {
-      const { source, type, id, apikey, isTeasable, force, version } = {
+      const { source, type, id, isTeasable, force, version } = {
         ...DEFAULT_API_OPTIONS,
         ...DEFAULT_DOCUMENT_OPTIONS,
         ...ensureIsDocumentOptions(fetchOneOptions)
@@ -79,7 +78,7 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
       request(
         `${getBaseUrl({ force, version })}/${
           isTeasable ? 'teasable' : ''
-        }content/${source}/${type}/${id}?apikey=${apikey}`,
+        }content/${source}/${type}/${id}?apikey=${API_KEY}`,
         resolve,
         reject
       );
@@ -93,7 +92,7 @@ function search(searchOptions: SearchOptions, done: Done<TerminusDocument[]>): v
 function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): any {
   return asyncTask(
     new Promise((resolve, reject) => {
-      const { apikey, force, source, version, ...searchParams } = {
+      const { force, source, version, ...searchParams } = {
         ...DEFAULT_SEARCH_OPTIONS,
         ...(searchOptions || ({} as SearchOptions))
       };
@@ -102,7 +101,7 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
       request(
         `${getBaseUrl({ force, version })}/search/${source}?${searchParamsKeys
           .map(key => `${key}=${searchParams[key]}`)
-          .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${apikey}`,
+          .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${API_KEY}`,
         (response: TerminusDocument) => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
         reject
       );
@@ -145,6 +144,12 @@ function parse(responseText: string): TerminusDocument {
 
 function flattenEmbeddedProps(_embedded: { [key: string]: TerminusDocument[] }) {
   return Object.keys(_embedded).reduce((memo, key) => memo.concat(_embedded[key]), [] as TerminusDocument[]);
+}
+
+if (!API_KEY) {
+  console.warn(
+    '[terminus-fetch] No Terminus API key provided. Requests will fail until you set the TERMINUS_FETCH_API_KEY environment variable.'
+  );
 }
 
 export default fetchOne;
