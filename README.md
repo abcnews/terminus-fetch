@@ -197,6 +197,8 @@ To run the `/example` project:
 3. Visit `http:<machine_name>.aus.aunty.abc.net.au:1234`
 4. Open the browser's development console
 
+Note: If you are sure you've added your Terminus API key to `.env` and the console is still warning you that the key is not present, delete parcel's `.cache` folder and re-start the dev server.
+
 ### Releasing
 
 `npm run release` will handle version bumping, git pushing and npm publication for you.
