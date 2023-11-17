@@ -2,7 +2,7 @@ import { TIERS, getTier } from '@abcnews/env-utils';
 import { getImages } from './lib/images';
 
 type DocumentID = string | number;
-type APIVersions = 'v1' | 'v2';
+type APIVersions = 'v2';
 interface APIOptions {
   force?: TIERS;
   version?: APIVersions;
