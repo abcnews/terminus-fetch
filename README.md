@@ -68,7 +68,7 @@ search({ limit: 1, source: 'mapi', service: 'triplej'})
   .catch(err => console.error(err));
 ```
 
-If your project's JS is currently executing in a page on `aus.aunty.abc.net.au`, requests will be made to Preview Terminus (`https://api-preview.terminus.abc-prod.net.au/api/v1/{teasable}content`), otherwise they'll be made to Live Terminus (`https://api.abc.net.au/terminus/api/v1/{teasable}content`).
+If your project's JS is currently executing in a page on `*.aus.aunty.abc.net.au`, requests will be made to Preview Terminus (`https://api-preview.terminus.abc-prod.net.au/api/v2/{teasable}content`), otherwise they'll be made to Live Terminus (`https://api.abc.net.au/terminus/api/v2/{teasable}content`).
 
 If you want to direct a single request to Live Terminus, regardless of the current execution domain, pass `force: "live"` as an option.
 
@@ -139,7 +139,7 @@ These are the same as `fetchOne`, only split across two options arguments.
 
 ### `getImages`
 
-This takes an image document returned from terminus (Imge, ImageProxy or CustomImage doctypes) and returns
+This takes an image document returned from terminus (Image, ImageProxy or CustomImage doctypes) and returns
 a normalised object including available image renditions.
 
 ```ts
@@ -152,12 +152,7 @@ There is no guarantee that the returned object will contain the widths requested
 
 Default for this argument is: `[160, 240, 480, 700, 940, 1400, 2150]`
 
-The argument is optional and behaves slightly differently depending on whether the passed document is from a request to v1 or v2 of the API.
-
-- _v1 documents_: this argument is completely ignored and the returned object will contain all available image sizes.
-- _v2 documents_: rendition URLs for every available aspect ratio will be generated for every requested width.
-
-_Note:_ There is also no guarantee about which aspect ratios are available for a given image.
+_Note:_ There is no guarantee about which aspect ratios are available for a given image.
 
 #### Returned object
 
@@ -182,20 +177,9 @@ declare type ImageRendition = {
 };
 ```
 
-There are a couple of gotchas in here related to image proxies. The `cmid` and `canonicalURL` properties will be those of the proxy, not the target image. While it's possible to return the ID of the proxied image from v1 documents, it's not on v2. So for the sake of standardisation, both will return the proxy ID and URL.
+There are a couple of gotchas in here related to image proxies. The `cmid` and `canonicalURL` properties will be those of the proxy, not the target image.
 
-In v2 responses, it's possible that the binary URL a rendition points to is acctually smaller than the dimensions in the object. This is because small originals are never upscaled by the image resizer, but can still be requested. This situation is flagged by the `isUndersizedBinary` property.
-
-## Developing
-
-To run the `/example` project:
-
-1. Copy `.env.example` to `.env` and add your Terminus API key
-2. Start the development server with: `npm run example`
-3. Visit `http:<machine_name>.aus.aunty.abc.net.au:1234`
-4. Open the browser's development console
-
-Note: If you are sure you've added your Terminus API key to `.env` and the console is still warning you that the key is not present, delete parcel's `.cache` folder and re-start the dev server.
+It's possible that the binary URL a rendition points to is actually smaller than the dimensions in the object. This is because small originals are never upscaled by the image resizer, but can still be requested. This situation is flagged by the `isUndersizedBinary` property.
 
 ### Releasing
 
