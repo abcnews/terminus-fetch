@@ -7,6 +7,7 @@ type ImageData = {
   caption?: string;
   attribution?: string;
   canonicalURL: string;
+  defaultRatio?: string;
   renditions: ImageRendition[];
 };
 type ImageRendition = { width: number; height: number; ratio: string; url: string; isUndersizedBinary: boolean };
@@ -16,6 +17,7 @@ type TerminusImageDocument = {
   title?: string;
   alt?: string;
   caption?: string;
+  defaultRatio?: string;
   byLine?: {
     plain: string;
   };
@@ -115,7 +117,7 @@ function generateImageRenditions(
 
 function getImages(doc: unknown, targetWidths: number[] = DEFAULT_TARGET_WIDTHS): ImageData {
   if (isTerminusImageDocument(doc)) {
-    const { title, alt, id, caption, canonicalURL } = doc;
+    const { title, alt, id, caption, canonicalURL, defaultRatio } = doc;
     return {
       cmid: id,
       title,
@@ -123,6 +125,7 @@ function getImages(doc: unknown, targetWidths: number[] = DEFAULT_TARGET_WIDTHS)
       caption,
       attribution: doc.byLine?.plain,
       canonicalURL,
+      defaultRatio,
       renditions: generateImageRenditions(
         doc.media.image.primary.binaryKey,
         doc.media.image.primary.ratios,
