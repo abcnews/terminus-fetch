@@ -12,10 +12,8 @@ To use this library, you must have a Terminus API key, and expose it on the envi
 
 ```js
 import { fetchOne, search } from '@abcnews/terminus-fetch';
-// We export fetchOne by default, as it's most commmonly used:
-import fetchOne from '@abcnews/terminus-fetch';
 
-// By default, we assume you want an Article docment from Core Media so you can pass a CMID:
+// By default, we assume you want an Article document from Core Media so you can pass a CMID:
 
 fetchOne(10736062, (err, doc) => {
   if (!err) {

@@ -152,5 +152,4 @@ if (!API_KEY) {
   );
 }
 
-export default fetchOne;
 export { fetchOne, search, getImages };
