@@ -166,6 +166,7 @@ declare type ImageData = {
   caption?: string;
   attribution?: string;
   canonicalURL: string;
+  defaultRatio?: string;
   renditions: ImageRendition[];
 };
 declare type ImageRendition = {
