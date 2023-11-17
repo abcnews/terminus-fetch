@@ -1,6 +1,6 @@
 {
   "name": "@abcnews/terminus-fetch",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Grab a document from the Preview / Live Terminus content API, based on the current execution domain",
   "license": "MIT",
   "engines": {
