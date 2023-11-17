@@ -42,29 +42,38 @@ type TerminusCropData = {
 };
 
 const extractEndpoint = (url: string) => {
-  const match = url.match(/https:\/\/[^\/]+/);
+  const match = url.match(/https:\/\/[^/]+/);
   if (!match) throw new Error('Could not determine image CDN endpoint');
   return match[0];
 };
 
-const isTerminusImageDocumentRatios = (obj: any): obj is TerminusImageDocumentRatios => {
-  if (typeof obj !== 'object') return false;
+const isObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
+
+const isTerminusImageDocumentRatios = (obj: unknown): obj is TerminusImageDocumentRatios => {
+  if (!isObject(obj)) return false;
   for (const key in obj) {
-    if (typeof key !== 'string') return false;
-    if (typeof obj[key].cropWidth !== 'number') return false;
-    if (typeof obj[key].cropHeight !== 'number') return false;
-    if (typeof obj[key].x !== 'number') return false;
-    if (typeof obj[key].y !== 'number') return false;
+    const nestedObj = obj[key];
+    if (!isObject(nestedObj)) return false;
+    if (typeof nestedObj.cropWidth !== 'number') return false;
+    if (typeof nestedObj.cropHeight !== 'number') return false;
+    if (typeof nestedObj.x !== 'number') return false;
+    if (typeof nestedObj.y !== 'number') return false;
   }
   return true;
 };
 
-const isTerminusImageDocument = (obj: any): obj is TerminusImageDocument => {
-  if (typeof obj !== 'object') return false;
-  if (obj?.docType !== 'Image' && obj?.docType !== 'ImageProxy') return false;
-  if (typeof obj?.id !== 'string') return false;
-  if (typeof obj?.media?.image?.primary?.binaryKey !== 'string') return false;
-  if (typeof obj?.media?.image?.primary?.complete[0]?.url !== 'string') return false;
+const isTerminusImageDocument = (obj: unknown): obj is TerminusImageDocument => {
+  if (!isObject(obj)) return false;
+  if (obj.docType !== 'Image' && obj.docType !== 'ImageProxy') return false;
+  if (typeof obj.id !== 'string') return false;
+  if (!isObject(obj.media)) return false;
+  if (!isObject(obj.media.image)) return false;
+  if (!isObject(obj.media.image.primary)) return false;
+  if (typeof obj.media.image.primary.binaryKey !== 'string') return false;
+  if (!Array.isArray(obj.media.image.primary.complete)) return false;
+  if (typeof obj.media.image.primary.complete[0]?.url !== 'string') return false;
   if (!isTerminusImageDocumentRatios(obj?.media?.image?.primary?.ratios)) return false;
   return true;
 };
@@ -104,7 +113,7 @@ function generateImageRenditions(
   return result;
 }
 
-function getImages(doc: any, targetWidths: number[] = DEFAULT_TARGET_WIDTHS): ImageData {
+function getImages(doc: unknown, targetWidths: number[] = DEFAULT_TARGET_WIDTHS): ImageData {
   if (isTerminusImageDocument(doc)) {
     const { title, alt, id, caption, canonicalURL } = doc;
     return {
@@ -192,23 +201,26 @@ const getRatioString = (width: number, height: number) => {
   return `${width / gcf}x${height / gcf}`;
 };
 
-const isLegacyTerminusImageDocument = (obj: any): obj is LegacyTerminusImageDocument => {
-  if (typeof obj !== 'object') return false;
-  if (obj?.docType !== 'Image' && obj?.docType !== 'ImageProxy' && obj?.docType !== 'CustomImage') return false;
-  if (typeof obj?.id !== 'string') return false;
-  if (!isLegacyTerminusImageDocumentImages(obj?.media?.image?.primary?.complete)) return false;
+const isLegacyTerminusImageDocument = (obj: unknown): obj is LegacyTerminusImageDocument => {
+  if (!isObject(obj)) return false;
+  if (obj.docType !== 'Image' && obj.docType !== 'ImageProxy' && obj.docType !== 'CustomImage') return false;
+  if (typeof obj.id !== 'string') return false;
+  if (!isObject(obj.media)) return false;
+  if (!isObject(obj.media.image)) return false;
+  if (!isObject(obj.media.image.primary)) return false;
+  if (!isLegacyTerminusImageDocumentImages(obj.media.image.primary.complete)) return false;
   return true;
 };
 
-const isLegacyTerminusImageDocumentImage = (obj: any): obj is LegacyTerminusImageDocumentImage => {
-  if (typeof obj !== 'object') return false;
+const isLegacyTerminusImageDocumentImage = (obj: unknown): obj is LegacyTerminusImageDocumentImage => {
+  if (!isObject(obj)) return false;
   if (typeof obj.width !== 'number') return false;
   if (typeof obj.height !== 'number') return false;
   if (typeof obj.url !== 'string') return false;
   return true;
 };
 
-const isLegacyTerminusImageDocumentImages = (obj: any): obj is LegacyTerminusImageDocumentImages => {
+const isLegacyTerminusImageDocumentImages = (obj: unknown): obj is LegacyTerminusImageDocumentImages => {
   if (!Array.isArray(obj)) return false;
   if (!obj.every(isLegacyTerminusImageDocumentImage)) return false;
   return true;
