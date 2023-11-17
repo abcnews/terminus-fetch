@@ -18,10 +18,10 @@ interface FetchOneOptions extends APIOptions, DocumentOptions {}
 type FetchOneOptionsOrDocumentID = FetchOneOptions | DocumentID;
 interface SearchOptions extends APIOptions {
   source?: string;
-  [x: string]: any;
+  [x: string]: unknown;
 }
 interface TerminusDocument {
-  _links?: {};
+  _links?: Record<string, unknown>;
   _embedded?: {
     [key: string]: TerminusDocument[];
   };
@@ -62,9 +62,9 @@ function getEndpoint(force?: TIERS): string {
 
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID): Promise<TerminusDocument>;
 function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done: Done<TerminusDocument>): void;
-function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): any {
+function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): unknown {
   return asyncTask(
-    new Promise((resolve, reject) => {
+    new Promise<TerminusDocument>((resolve, reject) => {
       const { source, type, id, isTeasable, force, version } = {
         ...DEFAULT_API_OPTIONS,
         ...DEFAULT_DOCUMENT_OPTIONS,
@@ -89,9 +89,9 @@ function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<Term
 
 function search(searchOptions: SearchOptions): Promise<TerminusDocument[]>;
 function search(searchOptions: SearchOptions, done: Done<TerminusDocument[]>): void;
-function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): any {
+function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): unknown {
   return asyncTask(
-    new Promise((resolve, reject) => {
+    new Promise<TerminusDocument[]>((resolve, reject) => {
       const { force, source, version, ...searchParams } = {
         ...DEFAULT_SEARCH_OPTIONS,
         ...(searchOptions || ({} as SearchOptions))
@@ -102,7 +102,7 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
         `${getBaseUrl({ force, version })}/search/${source}?${searchParamsKeys
           .map(key => `${key}=${searchParams[key]}`)
           .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${API_KEY}`,
-        (response: TerminusDocument) => resolve(response._embedded && flattenEmbeddedProps(response._embedded)),
+        (response: TerminusDocument) => resolve(flattenEmbeddedProps(response._embedded || {})),
         reject
       );
     }),
@@ -111,7 +111,7 @@ function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>):
 }
 
 // Enable easy support for both promise and callback interfaces
-function asyncTask(promise: Promise<any>, callback?: Callback<any, any>) {
+function asyncTask<E, T>(promise: Promise<T>, callback?: Callback<E, T>) {
   return callback
     ? promise.then(result => setTimeout(callback, 0, null, result)).catch(err => setTimeout(callback, 0, err))
     : promise;
@@ -125,7 +125,7 @@ function isDocumentIDInvalid(documentID: DocumentID): boolean {
   return documentID != +documentID || !String(documentID).length || String(documentID).indexOf('.') > -1;
 }
 
-function request(uri: string, resolve: Function, reject: Function) {
+function request(uri: string, resolve: (data: TerminusDocument) => unknown, reject: (err: ProgressEvent) => unknown) {
   const xhr = new XMLHttpRequest();
   const errorHandler = (event: ProgressEvent) => reject(event);
 
@@ -142,7 +142,7 @@ function parse(responseText: string): TerminusDocument {
   return JSON.parse(responseText.replace(GENIUNE_MEDIA_ENDPOINT_PATTERN, PROXIED_MEDIA_ENDPOINT));
 }
 
-function flattenEmbeddedProps(_embedded: { [key: string]: TerminusDocument[] }) {
+function flattenEmbeddedProps(_embedded: Record<string, TerminusDocument[]>) {
   return Object.keys(_embedded).reduce((memo, key) => memo.concat(_embedded[key]), [] as TerminusDocument[]);
 }
 
