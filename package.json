@@ -45,6 +45,7 @@
   },
   "scripts": {
     "start": "tsup src/index.ts --dts --sourcemap --format esm,cjs --watch",
+    "dev": "npm run start && vite",
     "build": "tsup src/index.ts --dts --sourcemap --format esm,cjs",
     "test": "jest --coverage",
     "lint": "eslint src",
@@ -67,7 +68,8 @@
     "ts-jest": "^29.1.1",
     "tslib": "^2.1.0",
     "tsup": "^8.0.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vite": "^5.2.8"
   },
   "dependencies": {
     "@abcnews/env-utils": "^3.0.0"

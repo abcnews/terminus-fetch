@@ -32,7 +32,6 @@ type Done<T> = Callback<ProgressEvent | Error, T>;
 // This built JS asset _will_be_ rewritten on-the-fly, so we need to obscure the origin somewhat
 const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '.abc.net.au'].join(''), 'g');
 const PROXIED_MEDIA_ENDPOINT = 'https://abcmedia.akamaized.net';
-const API_KEY = process.env.TERMINUS_FETCH_API_KEY;
 const TERMINUS_LIVE_ENDPOINT = 'https://api.abc.net.au/terminus';
 const TERMINUS_PREVIEW_ENDPOINT = 'https://api-preview.terminus.abc-prod.net.au';
 const DEFAULT_API_OPTIONS: APIOptions = {
@@ -128,9 +127,15 @@ function isDocumentIDInvalid(documentID: DocumentID): boolean {
 
 function request(uri: string, resolve: (data: TerminusDocument) => unknown, reject: (err: ProgressEvent) => unknown) {
   const xhr = new XMLHttpRequest();
-  const errorHandler = (event: ProgressEvent) => reject(event);
+  const errorHandler = (event: ProgressEvent) => {
+    console.log('event :>> ', event);
+    reject(event);
+  };
 
-  xhr.onload = event => (xhr.status !== 200 ? reject(event) : resolve(parse(xhr.responseText)));
+  xhr.onload = event => {
+    console.log('xhr.status :>> ', xhr.status);
+    xhr.status !== 200 ? reject(event) : resolve(parse(xhr.responseText));
+  };
   xhr.onabort = errorHandler;
   xhr.onerror = errorHandler;
   xhr.open('GET', uri, true);

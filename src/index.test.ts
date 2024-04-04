@@ -1,4 +1,5 @@
-import { getImages } from './index';
+import { TIERS } from '@abcnews/env-utils';
+import { fetchOne, getImages } from './index';
 
 import * as v2_standard_complete from './test-data/v2-standard-complete';
 import * as v2_standard_proxy from './test-data/v2-standard-proxy';
@@ -15,5 +16,12 @@ describe('getImages', () => {
     test('Standard image proxy with defaultRatio', () => {
       expect(getImages(v2_standard_proxy_with_default_ratio.input).defaultRatio).toEqual('4x3');
     });
+  });
+});
+
+describe('getArticle', () => {
+  test('fetchOne', async () => {
+    const doc = await fetchOne({ force: TIERS.PREVIEW, id: '103140862' });
+    console.log('doc :>> ', doc);
   });
 });

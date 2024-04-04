@@ -32,6 +32,7 @@ type TerminusImageDocument = {
     };
   };
 };
+
 type TerminusImageDocumentRatios = {
   [key: string]: TerminusCropData;
 };
