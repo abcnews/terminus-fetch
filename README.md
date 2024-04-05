@@ -189,3 +189,9 @@ It's possible that the binary URL a rendition points to is actually smaller than
 ## Authors
 
 - Colin Gourlay ([Gourlay.Colin@abc.net.au](mailto:Gourlay.Colin@abc.net.au))
+
+### Notes on breaking changes for v7
+
+- Promises only — no more callback functions
+- Terminus API key must be passed in
+-

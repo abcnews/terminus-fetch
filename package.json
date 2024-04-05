@@ -45,7 +45,7 @@
   },
   "scripts": {
     "start": "tsup src/index.ts --dts --sourcemap --format esm,cjs --watch",
-    "dev": "npm run start && vite",
+    "dev": "vite --host abc-x4q2rpygkq.aus.aunty.abc.net.au",
     "build": "tsup src/index.ts --dts --sourcemap --format esm,cjs",
     "test": "jest --coverage",
     "lint": "eslint src",
