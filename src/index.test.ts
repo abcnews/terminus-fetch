@@ -15,5 +15,8 @@ describe('getImages', () => {
     test('Standard image proxy with defaultRatio', () => {
       expect(getImages(v2_standard_proxy_with_default_ratio.input).defaultRatio).toEqual('4x3');
     });
+    test('Bad terminus doc', () => {
+      expect(() => getImages({})).toThrow();
+    });
   });
 });

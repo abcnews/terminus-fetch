@@ -20,14 +20,12 @@ interface SearchOptions extends APIOptions {
   source?: string;
   [x: string]: unknown;
 }
-interface TerminusDocument {
+export interface TerminusDocument {
   _links?: Record<string, unknown>;
   _embedded?: {
     [key: string]: TerminusDocument[];
   };
 }
-type Callback<E, T> = (err?: E, result?: T) => void;
-type Done<T> = Callback<ProgressEvent | Error, T>;
 
 // This built JS asset _will_be_ rewritten on-the-fly, so we need to obscure the origin somewhat
 const GENIUNE_MEDIA_ENDPOINT_PATTERN = new RegExp(['http', '://', 'mpegmedia', '.abc.net.au'].join(''), 'g');
@@ -61,61 +59,38 @@ function getEndpoint(force?: TIERS): string {
     : TERMINUS_LIVE_ENDPOINT;
 }
 
-function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID): Promise<TerminusDocument>;
-function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done: Done<TerminusDocument>): void;
-function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID, done?: Done<TerminusDocument>): unknown {
-  return asyncTask(
-    new Promise<TerminusDocument>((resolve, reject) => {
-      const { source, type, id, isTeasable, force, version } = {
-        ...DEFAULT_API_OPTIONS,
-        ...DEFAULT_DOCUMENT_OPTIONS,
-        ...ensureIsDocumentOptions(fetchOneOptions)
-      };
+async function fetchOne(fetchOneOptions: FetchOneOptionsOrDocumentID): Promise<TerminusDocument> {
+  const { source, type, id, isTeasable, force, version } = {
+    ...DEFAULT_API_OPTIONS,
+    ...DEFAULT_DOCUMENT_OPTIONS,
+    ...ensureIsDocumentOptions(fetchOneOptions)
+  };
 
-      if (isDocumentIDInvalid(id as DocumentID)) {
-        return reject(new Error(`Invalid ID: ${id}`));
-      }
+  if (isDocumentIDInvalid(id as DocumentID)) {
+    throw new Error(`Invalid ID: ${id}`);
+  }
 
-      request(
-        `${getBaseUrl({ force, version })}/${
-          isTeasable ? 'teasable' : ''
-        }content/${source}/${type}/${id}?apikey=${API_KEY}`,
-        resolve,
-        reject
-      );
-    }),
-    done
+  const res = await fetch(
+    `${getBaseUrl({ force, version })}/${isTeasable ? 'teasable' : ''}content/${source}/${type}/${id}?apikey=${API_KEY}`
   );
+  const responseText = await res.text();
+  return parse(responseText);
 }
 
-function search(searchOptions: SearchOptions): Promise<TerminusDocument[]>;
-function search(searchOptions: SearchOptions, done: Done<TerminusDocument[]>): void;
-function search(searchOptions?: SearchOptions, done?: Done<TerminusDocument[]>): unknown {
-  return asyncTask(
-    new Promise<TerminusDocument[]>((resolve, reject) => {
-      const { force, source, version, ...searchParams } = {
-        ...DEFAULT_SEARCH_OPTIONS,
-        ...(searchOptions || ({} as SearchOptions))
-      };
-      const searchParamsKeys = Object.keys(searchParams);
+async function search(searchOptions: SearchOptions): Promise<TerminusDocument[]> {
+  const { force, source, version, ...searchParams } = {
+    ...DEFAULT_SEARCH_OPTIONS,
+    ...(searchOptions || ({} as SearchOptions))
+  };
+  const searchParamsKeys = Object.keys(searchParams);
 
-      request(
-        `${getBaseUrl({ force, version })}/search/${source}?${searchParamsKeys
-          .map(key => `${key}=${searchParams[key]}`)
-          .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${API_KEY}`,
-        (response: TerminusDocument) => resolve(flattenEmbeddedProps(response._embedded || {})),
-        reject
-      );
-    }),
-    done
+  const res = await fetch(
+    `${getBaseUrl({ force, version })}/search/${source}?${searchParamsKeys
+      .map(key => `${key}=${searchParams[key]}`)
+      .join('&')}${searchParamsKeys.length ? '&' : ''}apikey=${API_KEY}`
   );
-}
-
-// Enable easy support for both promise and callback interfaces
-function asyncTask<E, T>(promise: Promise<T>, callback?: Callback<E, T>) {
-  return callback
-    ? promise.then(result => setTimeout(callback, 0, null, result)).catch(err => setTimeout(callback, 0, err))
-    : promise;
+  const _embedded = await res.json();
+  return flattenEmbeddedProps(_embedded);
 }
 
 function ensureIsDocumentOptions(options: DocumentOptionsOrDocumentID): DocumentOptions {
@@ -124,18 +99,6 @@ function ensureIsDocumentOptions(options: DocumentOptionsOrDocumentID): Document
 
 function isDocumentIDInvalid(documentID: DocumentID): boolean {
   return documentID != +documentID || !String(documentID).length || String(documentID).indexOf('.') > -1;
-}
-
-function request(uri: string, resolve: (data: TerminusDocument) => unknown, reject: (err: ProgressEvent) => unknown) {
-  const xhr = new XMLHttpRequest();
-  const errorHandler = (event: ProgressEvent) => reject(event);
-
-  xhr.onload = event => (xhr.status !== 200 ? reject(event) : resolve(parse(xhr.responseText)));
-  xhr.onabort = errorHandler;
-  xhr.onerror = errorHandler;
-  xhr.open('GET', uri, true);
-  xhr.responseType = 'text';
-  xhr.send();
 }
 
 function parse(responseText: string): TerminusDocument {

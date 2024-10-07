@@ -15,43 +15,22 @@ import { fetchOne, search } from '@abcnews/terminus-fetch';
 
 // By default, we assume you want an Article document from Core Media so you can pass a CMID:
 
-fetchOne(10736062, (err, doc) => {
-  if (!err) {
-    console.log(doc);
-    // > { id: 10736062, docType: "Article", contentSource: "coremedia", ... }
-  }
-});
+fetchOne(10736062).then(console.log);
+// > { id: 10736062, docType: "Article", contentSource: "coremedia", ... }
 
 // ...or you can pass an options object to override the defaults (see API below):
 
-fetchOne({ id: 10734902, type: 'video' }, (err, doc) => {
-  if (!err) {
-    console.log(doc);
-    // > {id: 10734902, docType: "Video", contentSource: "coremedia", ... }
-  }
-});
-
-// You can use promises instead of callbacks:
-
-fetchOne({ id: 123860, type: 'show', source: 'iview' })
-  .then(doc => {
-    console.log(doc);
-    // > { id: 123860, docType: "show", contentSource: "iview", ... }
-  })
-  .catch(err => console.error(err));
+fetchOne({ id: 10734902, type: 'video' }).then(console.log);
+// > {id: 10734902, docType: "Video", contentSource: "coremedia", ... }
 
 // Searching is also supported:
 
-search({ limit: 3, doctype: 'image' }), (err, docs) => {
-  if (!err) {
-    console.log(docs);
-    // > [
-    //     { id: 11405582, docType: "Image", contentSource: "coremedia", ... },
-    //     { id: 11404970, docType: "Image", contentSource: "coremedia", ... },
-    //     { id: 11405258, docType: "Image", contentSource: "coremedia", ... }
-    //   ]
-  }
-});
+search({ limit: 3, doctype: 'image' })).then(console.log);
+// > [
+//     { id: 11405582, docType: "Image", contentSource: "coremedia", ... },
+//     { id: 11404970, docType: "Image", contentSource: "coremedia", ... },
+//     { id: 11405258, docType: "Image", contentSource: "coremedia", ... }
+//   ]
 
 // ...for all sources...:
 
@@ -68,7 +47,7 @@ search({ limit: 1, source: 'mapi', service: 'triplej'})
   .catch(err => console.error(err));
 ```
 
-If your project's JS is currently executing in a page on `*.aus.aunty.abc.net.au`, requests will be made to Preview Terminus (`https://api-preview.terminus.abc-prod.net.au/api/v2/{teasable}content`), otherwise they'll be made to Live Terminus (`https://api.abc.net.au/terminus/api/v2/{teasable}content`).
+If your project's JS is currently executing in a page on a preview domain, requests will be made to Preview Terminus, otherwise they'll be made to Live Terminus.
 
 If you want to direct a single request to Live Terminus, regardless of the current execution domain, pass `force: "live"` as an option.
 
@@ -91,9 +70,8 @@ declare function fetchOne(
         id?: string | number;
         force?: 'preview' | 'live';
         isTeasable?: string;
-      },
-  done?: (err?: ProgressEvent | Error, doc?: Object) => void
-): void | Promise<Object>;
+      }
+): Promise<TerminusDocument>;
 ```
 
 If the `done` callback is omitted then the return value will be a Promise.
@@ -115,9 +93,8 @@ declare function search(
     source?: string;
     force?: "preview" | "live";
     ...searchParams: Object;
-  },
-  done?: (err?: ProgressEvent | Error, doc?: Object) => void
-): void | Promise<Object>;
+  }
+): Promise<TerminusDocument[]>;
 ```
 
 ...where your `searchParams` are additional properties on your `options` object, to query the API.
@@ -130,8 +107,6 @@ For example, if you wanted the last 20 images added to Core Media, your `searchP
   doctype: 'image'
 }
 ```
-
-If the `done` callback is omitted then the return value will be a Promise.
 
 #### Default options
 
