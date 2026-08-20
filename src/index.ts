@@ -35,7 +35,7 @@ const API_KEY = (() => {
     return process.env.TERMINUS_FETCH_API_KEY;
   } catch (e) {
     // modern build tools don't support this and must specify a key via the
-    // function args or class.
+    // function args
     return '';
   }
 })();
