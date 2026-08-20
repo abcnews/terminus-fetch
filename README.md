@@ -8,24 +8,26 @@ $ npm i @abcnews/terminus-fetch
 
 ## Usage
 
-To use this library, you must have a Terminus API key, and expose it on the enviromnent variable `TERMINUS_FETCH_API_KEY`. For `@abcnews/aunty`-based projects, we currently recommend placing it in a `.env` file in your project directory, so that it is bundled with your app.
+To use this library, pass your Terminus API key as the second argument. You may also set the `process.env.TERMINUS_FETCH_API_KEY` key in environments that support it, but this functionality is deprecated and may be removed in future.
 
 ```js
 import { fetchOne, search } from '@abcnews/terminus-fetch';
 
+const apiKey = 'YOUR_API_KEY';
+
 // By default, we assume you want an Article document from Core Media so you can pass a CMID:
 
-fetchOne(10736062).then(console.log);
+fetchOne(10736062, apiKey).then(console.log);
 // > { id: 10736062, docType: "Article", contentSource: "coremedia", ... }
 
 // ...or you can pass an options object to override the defaults (see API below):
 
-fetchOne({ id: 10734902, type: 'video' }).then(console.log);
+fetchOne({ id: 10734902, type: 'video' }, apiKey).then(console.log);
 // > {id: 10734902, docType: "Video", contentSource: "coremedia", ... }
 
 // Searching is also supported:
 
-search({ limit: 3, doctype: 'image' })).then(console.log);
+search({ limit: 3, doctype: 'image' }, apiKey).then(console.log);
 // > [
 //     { id: 11405582, docType: "Image", contentSource: "coremedia", ... },
 //     { id: 11404970, docType: "Image", contentSource: "coremedia", ... },
@@ -34,7 +36,7 @@ search({ limit: 3, doctype: 'image' })).then(console.log);
 
 // ...for all sources...:
 
-search({ limit: 1, source: 'mapi', service: 'triplej'})
+search({ limit: 1, source: 'mapi', service: 'triplej' }, apiKey)
   .then(docs => {
     console.log(docs);
     // > [
@@ -69,12 +71,11 @@ declare function fetchOne(
         type?: string;
         id?: string | number;
         force?: 'preview' | 'live';
-        isTeasable?: string;
-      }
+        isTeasable?: boolean;
+      },
+  apiKey?: string
 ): Promise<TerminusDocument>;
 ```
-
-If the `done` callback is omitted then the return value will be a Promise.
 
 #### Default options
 
@@ -93,7 +94,8 @@ declare function search(
     source?: string;
     force?: "preview" | "live";
     ...searchParams: Object;
-  }
+  },
+  apiKey?: string
 ): Promise<TerminusDocument[]>;
 ```
 
